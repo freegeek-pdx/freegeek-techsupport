@@ -1,0 +1,157 @@
+body {
+	background-image:url('background.jpg');
+	background-color:#cccccc;
+	background-position:top left;
+//	background-repeat:no-repeat;
+   background-attachment: fixed;
+   background-color:#AAA;
+} 
+div.transbox
+{
+        background-color:#999999;
+        width: 495px;
+        /* for IE */
+        filter:alpha(opacity=80);
+        /* CSS3 standard */
+        opacity:0.8;
+        margin-left:50px;
+        margin-bottom: 5px;
+        padding-top: 1px;
+        padding-bottom: 1px;
+        padding-left: 5px;
+
+ }
+ 
+ 	a:link {
+  		color:#465A7D;
+  		text-decoration:none;
+  		}
+	a:visited {
+  		color:#546381;
+  		text-decoration:none;
+  		}
+	a:hover {
+  		color:#6178A5; /*#839CA9;  #AEC0CA; #CEDAE2;  #c60; */
+  		text-decoration:underline;
+  		}
+  		
+  		
+ 	a:link.over {
+  		color:#60140E;
+  		text-decoration:none;
+  		}
+	a:visited.over {
+  		color:#7C1E16;
+  		text-decoration:none;
+  		}
+	a:hover.over {
+  		color:#C26500; /*#839CA9;  #AEC0CA; #CEDAE2;  #c60; */
+  		text-decoration:underline;
+  		}
+  		 		
+  		
+  	a.nounder2 {
+    		//color: #fff;
+    	   color:#435873;
+    		text-decoration: none;
+    		border-bottom: 0px;
+		}
+	 
+	
+		p {
+		font: Sabon,Garamond,Bodini,Times;
+		font-size: 12pt;
+		//margin-top: 5px;
+		}
+		p.sans {
+		font-family: helvetica,  arial, verdana,  sans-serif;
+		font-size: 12pt;
+		//margin-top: 5px;
+		}
+		p.big {
+		font: Sabon,Garamond,Bodini,Times;
+		font-size: 14pt;
+		//margin-top: 5px;
+		}
+		p.sans-big {
+		font-family: helvetica,  arial, verdana,  sans-serif;
+		font-size: 12pt;
+		margin: 10px;
+		}
+		p.small {
+		font: Sabon,Garamond,Bodini,Times;
+		font-size: 10pt;
+		//margin-top: 5px;
+		}
+		p.sans-small {
+		font-family: helvetica,  arial, verdana,  sans-serif;
+		font-size: 10pt;
+		//margin-top: 5px;
+		}
+	ul.plain{
+		list-style:none;		
+		}
+	li {
+		font: Sabon,Garamond,Bodini,Times;
+		font-size: 12pt;
+		}
+	li.sans {
+		font-family: helvetica,  arial, verdana,  sans-serif;
+		font-size: 12pt;
+		}
+	td {
+		font: Sabon,Garamond,Bodini,Times;
+		font-size: 12pt;
+		padding: 5px;
+		}
+	td.sans {
+		font-family: helvetica,  arial, verdana,  sans-serif;
+		font-size: 12pt;
+		}
+	th {
+		font: Sabon,Garamond,Bodini,Times;
+		font-size: 12pt;
+		}		
+	th.sans {
+		font-family: helvetica,  arial, verdana,  sans-serif;
+		font-size: 12pt;
+		}
+	.dotted {
+		border-style: dotted;
+		border-width: 1px;
+		margin: -2px;
+	}	
+	dt {
+		font: Sabon,Garamond,Bodini,Times;
+		font-size: 12pt;
+		padding: 5px;
+		}
+	dt.sans {
+		font-family: helvetica,  arial, verdana,  sans-serif;
+		font-size: 12pt;
+		}
+	dt.title {
+		font-family: helvetica,  arial, verdana,  sans-serif;
+		font-size: 16pt;
+		font-weight:bold;
+		}
+	dd {
+		font: Sabon,Garamond,Bodini,Times;
+		font-size: 12pt;
+		padding: 5px;
+		}
+	dd.sans {
+		font-family: helvetica,  arial, verdana,  sans-serif;
+		font-size: 12pt;
+		}
+					
+	h1.title {	
+		//display: inline;
+		font-family:helvetica,  arial, verdana,  sans-serif;
+		font-size:32px;
+		padding-top:12px;
+		padding-bottom:12px;
+		margin-left: 5px;
+			text-align: center;
+		}		
+		
