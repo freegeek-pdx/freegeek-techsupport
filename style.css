@@ -23,40 +23,18 @@ div.transbox
  }
  
  	a:link {
-  		color:#574767; //#6E5E89;
+  		color:#5F4A63;
   		text-decoration:none;
   		}
 	a:visited {
-  		color:#6E5E89; //;7D5784;
+  		color:#5F4A63;
   		text-decoration:none;
   		}
 	a:hover {
-  		color:#C9C183; /*#839CA9;  #AEC0CA; #CEDAE2;  #c60; */
+  		color:#C9C183;
   		text-decoration:underline;
   		}
   		
-  		
- 	a:link.over {
-  		color:#60140E;
-  		text-decoration:none;
-  		}
-	a:visited.over {
-  		color:#7C1E16;
-  		text-decoration:none;
-  		}
-	a:hover.over {
-  		color:#C26500; /*#839CA9;  #AEC0CA; #CEDAE2;  #c60; */
-  		text-decoration:underline;
-  		}
-  		 		
-  		
-  	a.nounder2 {
-    		//color: #fff;
-    	   color:#435873;
-    		text-decoration: none;
-    		border-bottom: 0px;
-		}
-	 
 	
 		p {
 		font: Sabon,Garamond,Bodini,Times;
