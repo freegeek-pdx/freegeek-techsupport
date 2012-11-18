@@ -23,15 +23,15 @@ div.transbox
  }
  
  	a:link {
-  		color:#465A7D;
+  		color:#6E5E89;
   		text-decoration:none;
   		}
 	a:visited {
-  		color:#546381;
+  		color:#7D5784;
   		text-decoration:none;
   		}
 	a:hover {
-  		color:#6178A5; /*#839CA9;  #AEC0CA; #CEDAE2;  #c60; */
+  		color:#C9C183; /*#839CA9;  #AEC0CA; #CEDAE2;  #c60; */
   		text-decoration:underline;
   		}
   		
@@ -152,6 +152,7 @@ div.transbox
 		padding-top:12px;
 		padding-bottom:12px;
 		margin-left: 5px;
-			text-align: center;
+		text-align: center;
+                text-color: #341F59;
 		}		
 		
