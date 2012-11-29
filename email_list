@@ -1,0 +1,14 @@
+# associative array
+declare -A email_list
+email_list[Amelia]="alamb@freegeek.org"
+email_list[Darryl]="darryl@freegeek.org"
+email_list[Jen]="jhiggins@freegeek.org"
+email_list[Jessica]="jbeckett@freegeek.org"
+email_list[Laurel]="laurel@freegeek.org"
+email_list[Liane]="liane@freegeek.org"
+email_list[Meredith]="meredith@freegeek.org"
+email_list[Paul]="paulm@freegeek.org"
+email_list[Richard]="richard@freegeek.org"
+email_list[Sean]="scellef@freegeek.org"
+email_list[Tony]="tonyc@freegeek.org"
+
