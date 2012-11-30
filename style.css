@@ -8,7 +8,7 @@ body {
 div.transbox
 {
         background-color:#999999;
-        width: 495px;
+        width: 550px;
         /* for IE */
         filter:alpha(opacity=80);
         /* CSS3 standard */
