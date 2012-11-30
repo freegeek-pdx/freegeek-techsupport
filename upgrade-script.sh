@@ -49,9 +49,20 @@ apt-get purge $depends_list
 interfaces=$(ifconfig -a -s | awk '{if (NR!=1) {print $1}}')
 for interface in $interfaces; do
     if dhclient $interface; then
+        has_network=true
         break
     fi
 done
+
+if [[ -n $has_network ]]; then
+    echo 
+    echo "Could not get a network connection. Exiting..."
+    exit 5
+elif ! ping -qc apt.freegeek.org; then
+    echo    
+    echo "Could not reach an outside host. Exiting..."
+    exit 5
+fi
 
 #added error check and made function
 #apt-get update  # may need to run 'dhclient eth0' first
