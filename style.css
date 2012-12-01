@@ -131,11 +131,11 @@ dl.flat {
         width:100%;
         overflow:hidden;
         }
-dd.flat {
+dt.flat {
         width:20%;
         float:left;
         }
-dt.flat {
+dd.flat {
         width:80%;
         float:left;
         }
