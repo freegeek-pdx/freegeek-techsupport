@@ -131,21 +131,22 @@ dl.flat {
         width:100%;
         overflow:hidden;
         background:#ff0;
-            padding:0;
-                margin:0;
-
+        padding:0;
+        margin:0;
         }
 dt.flat {
         float: left;
         width: 50%;
         background:#cc0;
-
+        padding:0;
+        margin:0;
         }
 dd.flat {
         float: right;
         width: 50%;
         background: #dd0;
-
+        padding:0;
+        margin:0;
         }
 
 
