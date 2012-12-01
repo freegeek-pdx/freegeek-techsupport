@@ -132,8 +132,7 @@ dl.flat {
         overflow:hidden;
         font-family: helvetica,  arial, verdana,  sans-serif;
         font-size: 10pt;
-        border:1px;
-
+         background:#ff0;
         }
 dt.flat {
         width:20%;
