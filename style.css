@@ -18,8 +18,8 @@ div.transbox {
         margin-bottom: 5px;
         padding-top: 1px;
         padding-bottom: 1px;
-        padding-left: 10px;
-        padding-right: 10px;
+        //padding-left: 10px;
+        //padding-right: 10px;
         }
  
 
@@ -130,8 +130,6 @@ dd.sans {
 dl.flat {
         width:100%;
         overflow:hidden;
-        font-family: helvetica,  arial, verdana,  sans-serif;
-        font-size: 6pt;
         background:#ff0;
         }
 dt.flat {
