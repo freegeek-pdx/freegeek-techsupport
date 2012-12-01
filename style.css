@@ -136,13 +136,13 @@ dl.flat {
         }
 dt.flat {
         float:left;
-        width:20%;
+        width:50%;
         clear:left;
         background:#cc0;
         }
 dd.flat {
         float:left;
-        width:80%;
+        width:50%;
         background:#dd0;
         }
 
