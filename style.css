@@ -130,6 +130,9 @@ dd.sans {
 dl.flat {
         width:100%;
         overflow:hidden;
+        font-family: helvetica,  arial, verdana,  sans-serif;
+        font-size: 10pt;
+
         }
 dt.flat {
         width:20%;
