@@ -132,13 +132,12 @@ dl.flat {
         overflow:hidden;
         font-family: helvetica,  arial, verdana,  sans-serif;
         font-size: 10pt;
-        padding:0px;
         background:#ff0;
         }
 dt.flat {
         float:left;
         width:20%;
-
+        clear:left;
         background:#cc0;
         }
 dd.flat {
