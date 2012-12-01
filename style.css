@@ -133,15 +133,14 @@ dl.flat {
         background:#ff0;
         }
 dt.flat {
-        float:left;
-        width:50%;
-        clear:left;
+        float: left;
+        width: 50%;
         background:#cc0;
         }
 dd.flat {
-        float:left;
-        width:50%;
-        background:#dd0;
+        float: right;
+        width: 50%;
+        background: #dd0;
         }
 
 
