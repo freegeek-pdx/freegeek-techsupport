@@ -138,12 +138,14 @@ dt.flat {
         width: 20%;
         padding:0;
         margin:0;
+        clear: both;
         }
 dd.flat {
         float: right;
         width: 80%;
         padding:0;
         margin:0;
+        display: block;
         }
 
 
