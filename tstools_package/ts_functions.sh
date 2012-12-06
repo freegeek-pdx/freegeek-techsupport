@@ -11,13 +11,13 @@ test_for_root(){
 }
 
 check_file_write(){
-        file=$1
+        local file=$1
 	touch $file &>/dev/null
 	return $?
 }
 
 check_file_read(){
-        file=$1
+        local file=$1
         if [[ ! -e $file ]]; then
                 return 5
         elif [[ ! -r $file ]]; then
@@ -26,6 +26,21 @@ check_file_read(){
                 return 0
         fi
 }
+
+
+check_dir_read(){
+        local dir=$1
+        if [[ ! -e $dir ]]; then
+                return 5
+        elif [[ ! -r $dir ]]; then
+                return 4
+        elif [[ ! -d $dir ]]; then
+		return 6
+	else
+                return 0
+        fi
+}
+
 
 choose_username(){
 	local path=$1
@@ -53,9 +68,7 @@ test_for_uid(){
 	local my_uid=$(id -u $my_user)
 	echo $my_uid
 }
-
 test_for_user(){
-	local my_user=$1
 	local path=$2
 	if [[ $path ]]; then
         	local chroot_path="chroot $path"
@@ -90,7 +103,7 @@ expire_password(){
 backup_passwords(){
 	local path=$1
 	local isotime=$(date +%Y%m%d%H%M)
-	for file in passwd group shadow ; do
+	for file in passwd group shadow gshadow; do
 		if ! cp $path/etc/$file $path/etc/$file.fregeek_ts_backup.$isotime;then
 			local failarray=( ${failarray[@]-} $(echo "$file") )
 		fi
@@ -103,14 +116,14 @@ backup_passwords(){
                 done
                 return 3
 	else
-	echo "password files backed up with extension .fregeek_ts_backup.$isotime"
+	echo "password files backed up with extension .freegeek_ts_backup.$isotime"
         exit 0
 	fi
 }
 
 backup_passwords_for_reset(){
 	local path=$1
-        for file in passwd group shadow ; do
+        for file in passwd group shadow gshadow; do
                 if ! cp $path/etc/$file $path/etc/$file.freegeek_ts_bak;then
                         local failarray=( ${failarray[@]-} $(echo "$file") )
                 fi
@@ -134,7 +147,7 @@ revert_passwords(){
 	if [[ ! $extension ]] ; then
 		extension='freegeek_ts_bak'
 	fi 
-        for file in passwd group shadow ; do
+        for file in passwd group shadow gshadow ; do
                 if ! cp $path/etc/$file.${extension} $path/etc/$file ;then
                         local failarray=( ${failarray[@]-} $(echo "$file") )
                 fi
@@ -184,17 +197,62 @@ reset_gconf(){
 
 # write to error log and/or standard out 
 write_msg(){
-local msg="$1"
-if [[ $2 ]]; then
-        local logfile=$2
-fi
-echo "$msg"
-if [[ $logfile ]]; then
-        if ! echo "$msg" >>$logfile; then
-        echo "Could not write to Log File: $logfile"
-        exit 3
-        fi
-fi
+local msg="$@"  
+for line in "$msg"; do 
+	echo "$line"
+	if [[ $logfile ]]; then
+		if ! echo "$line" >>$logfile; then 
+		# should not hit here as already checked
+		echo "Could not write to Log File: $logfile"
+                exit 3
+		fi
+	fi
+done
 return 0
+}
+
+
+# remove list of files
+cleanup(){
+	rm -r $@
+	return $?
+}
+
+
+# test for valid ticket number
+#N.B. actually tests for 5 digits, will stop working at some distant point in the future
+check_ticket_number(){
+	local ticketnumber=$1
+	local regex="^[0-9]{5}$"
+	if [[ ! $ticketnumber =~ $regex ]] ; then
+                return 1
+	else
+		return 0
+	fi
+}
+
+#test for valid backup directory
+#N.B. tests for 8 digits a dash then 5 digits, will stop working at some distant point in the future
+check_valid_backup_dir(){
+	local backupdir=$1
+	local regex="^[0-9]{8}-[0-9]{5}$"
+        if [[ ! $backupdir =~ $regex ]] ; then
+                return 1
+        else
+                return 0
+        fi
+}
+
+
+
+#checks to see if any characters other than numbers letters and underscores are present
+check_valid_chars(){
+	local input=$1
+	regex="[^A-Za-z0-9_]"
+	if [[ ! $input =~ $regex ]]; then
+		return 1
+	else
+		return 0
+	fi
 }
 
