@@ -1,0 +1,14 @@
+#!/bin/bash
+tmpfile="/home/paulm/.folder_check.tmp"
+
+diskfree="$( df -h | grep "/var/tsbackup" | awk '{print "Used: " $3 " Free: " $4}')"
+echo "Usage Stats for /var/tsbackup on Tsbackup:" >>$tmpfile
+echo $diskfree >>$tmpfile
+echo >>$tmpfile
+echo "The following directories are older than 45 days and can be deleted:" >>$tmpfile
+for dir in $(/home/paulm/bin/outdated); do
+	echo /var/tsbackup/$dir >>$tmpfile
+done
+env MAILRC=/dev/null from="A Robot on behalf of <paulm@freegeek.org>" mailx -n -s "Folders that can be deleted on tsbackup" support-staff@lists.freegeek.org < $tmpfile
+rm $tmpfile
+
