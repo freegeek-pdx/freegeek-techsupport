@@ -7,9 +7,16 @@ echo $diskfree >>$tmpfile
 echo >>$tmpfile
 echo "The following directories are older than 45 days and can be deleted:" >>$tmpfile
 for dir in $(/home/paulm/bin/outdated); do
-#	echo /var/tsbackup/$dir >>$tmpfile
-	du -sh /var/tsbackup/$dir  >> $tmpfile
+    ticket=$(echo $dir | awk -F - '{print $2}'
+    while read line; do
+        if [[ $line =~  "Subject" ]]; then 
+            subject=$(echo -n $line | awk '{$1=""; print $0}')
+        elif [[ $line =~ "Status" ]]; then
+            status=$(echo -n $line | awk '{$1=""; print $0}')
+        fi
+    done < <(wget --keep-session-cookies  --save-cookies cookies.txt  --post-data 'user=tsrobot&pass=EucNabs4' -qO-  todo.freegeek.org/REST/1.0/ticket/${ticket}/show/)
+    size=$(du -sh /var/tsbackup/$dir | awk '{print $1}')
+    printf "/var/tsbackup/%s\t%s\t%s\t%s" "$dir" "$size" $status" "$subject"
 done
 mailx -n -r paulm@freegeek.org -s "Folders that can be deleted on tsbackup"  support-staff@lists.freegeek.org < $tmpfile
 rm $tmpfile
-
