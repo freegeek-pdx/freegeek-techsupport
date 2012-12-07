@@ -1,5 +1,5 @@
 #!/bin/bash
-tmpfile="/$USER/.folder_check.tmp"
+tmpfile="$HOME/.folder_check.tmp"
 
 diskfree="$( df -h | grep "/var/tsbackup" | awk '{print "Used: " $3 " Free: " $4}')"
 echo "Usage Stats for /var/tsbackup on Tsbackup:" >>$tmpfile
@@ -7,7 +7,7 @@ echo $diskfree >>$tmpfile
 echo >>$tmpfile
 echo "The following directories are older than 45 days and can be deleted:" >>$tmpfile
 for dir in $(/home/paulm/bin/outdated); do
-    ticket=$(echo $dir | awk -F - '{print $2}'
+    ticket=$(echo $dir | awk -F - '{print $2}')
     while read line; do
         if [[ $line =~  "Subject" ]]; then 
             subject=$(echo -n $line | awk '{$1=""; print $0}')
@@ -16,7 +16,7 @@ for dir in $(/home/paulm/bin/outdated); do
         fi
     done < <(wget --keep-session-cookies  --save-cookies cookies.txt  --post-data 'user=tsrobot&pass=EucNabs4' -qO-  todo.freegeek.org/REST/1.0/ticket/${ticket}/show/)
     size=$(du -sh /var/tsbackup/$dir | awk '{print $1}')
-    printf "/var/tsbackup/%s\t%s\t%s\t%s" "$dir" "$size" $status" "$subject"
+    printf "/var/tsbackup/%s\t%s\t%s\t%s\n" "$dir" "$size" "$status" "$subject" >>$tmpfile
 done
 mailx -n -r paulm@freegeek.org -s "Folders that can be deleted on tsbackup"  support-staff@lists.freegeek.org < $tmpfile
 rm $tmpfile
