@@ -1,0 +1,16 @@
+#!/bin/bash
+host=$1
+while [  1 ] ; do 
+    ping -c 1 $host &>/dev/null
+     if  [[ $1 -ne 0 ]] ; then 
+        for x in $(seq 1 20); do  
+            beep -f 800 
+            sleep 0.3s
+        done 
+         exit
+    else 
+        date 
+        sleep 30s
+    fi
+done
+
