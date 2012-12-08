@@ -59,7 +59,7 @@ backup_path="/var/tsbackup"
 
 tmpfile="$HOME/.folder_check.tmp"
 
-diskfree="$( df -h | grep "$sbackup_path" | awk '{print "Used: " $3 " Free: " $4}')"
+diskfree="$( df -h | grep "$backup_path" | awk '{print "Used: " $3 " Free: " $4}')"
 echo "Usage Stats for $backup_path on $backup_host:" >>$tmpfile
 echo $diskfree >>$tmpfile
 echo >>$tmpfile
