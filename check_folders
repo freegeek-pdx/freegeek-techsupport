@@ -1,8 +1,66 @@
 #!/bin/bash
+help(){
+cat <<EOF
+Usage : $0 [OPTION]
+Lists folders due for deletion (and sends email)
+	-m 		Send email rather than printing to stdout.
+	-r [EMAIL]	Specify optional adress to send email to. 
+			It is not necessary to specify an address. 
+			There is one set by default in the script.
+			Requires the -m option.
+	-f [EMAIL]	Set the from email adress. It is not necessary to 
+			specify an address. There is one set by default in
+			the script. Requires the -m option.
+	-h 		print this message
+
+This script prints info about backup folders on tsbackup that are due for deletion. It is primarily intended for use with cron. 
+EOF
+
+if [[ -n $1 && $(echo {0..255}) =~ $1 ]]; then
+        exit $1
+else
+        exit 0
+fi
+}
+
+
+# process option arguments
+while getopts "hmr:f:" option; do
+        case "$option" in
+                h) help;;
+                m) mail=true;;
+		r) recipient=$OPTARG;;
+		f) sender=$OPTARG;;
+                \?)  echo "bad option supplied" 
+                       help 2
+		;;
+        esac
+done
+if [[ $recipient && ! $mail ]]; then
+	echo "The -r option requires the use of -m"
+elif [[ $sender && ! $mail ]]; then
+        echo "The -f option requires the use of -m"
+fi 
+
+
+# default variables
+if [[ $mail ]]; then
+	if [[ -z $recipient ]]; then
+		recipient="support-staff@lists.freegeek.org"
+	fi
+	if [[ -z $sender ]]; then
+                sender="paulm@freegeek.org "
+        fi
+fi
+
+backup_host="tsbackup"
+backup_path="/var/tsbackup"
+
+
 tmpfile="$HOME/.folder_check.tmp"
 
-diskfree="$( df -h | grep "/var/tsbackup" | awk '{print "Used: " $3 " Free: " $4}')"
-echo "Usage Stats for /var/tsbackup on Tsbackup:" >>$tmpfile
+diskfree="$( df -h | grep "$sbackup_path" | awk '{print "Used: " $3 " Free: " $4}')"
+echo "Usage Stats for $backup_path on $backup_host:" >>$tmpfile
 echo $diskfree >>$tmpfile
 echo >>$tmpfile
 echo "The following directories are older than 45 days and can be deleted:" >>$tmpfile
@@ -15,8 +73,14 @@ for dir in $(/home/paulm/bin/outdated); do
             status=$(echo -n $line | awk '{$1=""; print $0}')
         fi
     done < <(wget --keep-session-cookies  --save-cookies cookies.txt  --post-data 'user=tsrobot&pass=EucNabs4' -qO-  todo.freegeek.org/REST/1.0/ticket/${ticket}/show/)
-    size=$(du -sh /var/tsbackup/$dir | awk '{print $1}')
+    size=$(du -sh ${backup_path}/${dir} | awk '{print $1}')
     printf "/var/tsbackup/%s\t%s\t%s\t%s\n" "$dir" "$size" "$status" "$subject" >>$tmpfile
 done
-mailx -n -r paulm@freegeek.org -s "Folders that can be deleted on tsbackup"  support-staff@lists.freegeek.org < $tmpfile
+if [[ $mail ]]; then
+	 mailx -n -r $sender -s "Folders that can be deleted on $backup_host" $recipient < $tmpfile
+	
+	# echo "mailx -n -r $sender -s Folders that can be deleted on $backup_host $recipient < $tmpfile"
+else
+	cat $tmpfile
+fi
 rm $tmpfile
