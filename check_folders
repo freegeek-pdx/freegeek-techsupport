@@ -4,6 +4,7 @@ cat <<EOF
 Usage : $0 [OPTION]
 Lists folders due for deletion (and sends email)
 	-m 		Send email rather than printing to stdout.
+        -p [PATH]       Use this option to specify the path of the backup dir
 	-r [EMAIL]	Specify optional adress to send email to. 
 			It is not necessary to specify an address. 
 			There is one set by default in the script.
@@ -25,12 +26,13 @@ fi
 
 
 # process option arguments
-while getopts "hmr:f:" option; do
+while getopts "hmr:f:p:" option; do
         case "$option" in
                 h) help;;
                 m) mail=true;;
 		r) recipient=$OPTARG;;
 		f) sender=$OPTARG;;
+                p) backup_path=$OPTARG;;
                 \?)  echo "bad option supplied" 
                        help 2
 		;;
@@ -53,9 +55,14 @@ if [[ $mail ]]; then
         fi
 fi
 
-backup_host="tsbackup"
-backup_path="/var/tsbackup"
+#backup_host="tsbackup"
+backup_host=$HOSTNAME
+default_backup_path="/var/tsbackup"
 $path=/usr/local/bin
+
+if [[ -z $backup_path ]]; then
+    backup_path=$default_backup_path
+fi
 
 tmpfile="$HOME/.folder_check.tmp"
 
@@ -64,7 +71,7 @@ echo "Usage Stats for $backup_path on $backup_host:" >>$tmpfile
 echo $diskfree >>$tmpfile
 echo >>$tmpfile
 echo "The following directories are older than 45 days and can be deleted:" >>$tmpfile
-for dir in $($path/outdated); do
+for dir in $($path/outdated $backup_path); do
     ticket=$(echo $dir | awk -F - '{print $2}')
     while read line; do
         if [[ $line =~  "Subject:" ]]; then 
