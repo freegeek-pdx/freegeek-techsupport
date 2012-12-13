@@ -55,7 +55,7 @@ fi
 
 backup_host="tsbackup"
 backup_path="/var/tsbackup"
-
+$path=/usr/local/bin
 
 tmpfile="$HOME/.folder_check.tmp"
 
@@ -64,7 +64,7 @@ echo "Usage Stats for $backup_path on $backup_host:" >>$tmpfile
 echo $diskfree >>$tmpfile
 echo >>$tmpfile
 echo "The following directories are older than 45 days and can be deleted:" >>$tmpfile
-for dir in $(/home/paulm/bin/outdated); do
+for dir in $($path/outdated); do
     ticket=$(echo $dir | awk -F - '{print $2}')
     while read line; do
         if [[ $line =~  "Subject:" ]]; then 
