@@ -58,10 +58,15 @@ fi
 #backup_host="tsbackup"
 backup_host=$HOSTNAME
 default_backup_path="/var/tsbackup"
-$path=/usr/local/bin
+#path=/home/paulm/bin
 
 if [[ -z $backup_path ]]; then
     backup_path=$default_backup_path
+fi
+
+if [[ ! -e $backup_path ]]; then
+    echo "$backup_path does not exist!"
+    exit 3
 fi
 
 tmpfile="$HOME/.folder_check.tmp"
