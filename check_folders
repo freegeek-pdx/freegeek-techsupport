@@ -103,7 +103,7 @@ for dir in $(${path}outdated $backup_path); do
     fi
 done
 
-echo 
+echo >> $tmpfile
 
 # we have tickets that have a status that is not resolved
 if (( ${#unresolved_ticket_list[@]} > 0 )); then
@@ -117,9 +117,9 @@ if (( ${#unresolved_ticket_list[@]} > 0 )); then
     done
 fi
 
-echo
 
 # if its the beginning of the year check for wrong dates
+echo >>$tmpfile
 if (( $(date +%m) < 3 )); then 
     echo "The following directories  appear to be  older than 300 days" >> $tmpfile 
     echo "It appears someone may not know what year it is." >>$tmpfile
