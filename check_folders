@@ -103,6 +103,8 @@ for dir in $(${path}outdated $backup_path); do
     fi
 done
 
+echo 
+
 # we have tickets that have a status that is not resolved
 if (( ${#unresolved_ticket_list[@]} > 0 )); then
     echo  >>$tmpfile
@@ -114,6 +116,8 @@ if (( ${#unresolved_ticket_list[@]} > 0 )); then
         printf "/var/tsbackup/%s\t%s\t%s\t%s\n" "${unresolved[${unresolved_ticket}_dir]}" "${unresolved[${unresolved_ticket}_size]}" "${unresolved[${unresolved_ticket}_status]}" "${unresolved[${unresolved_ticket}_subject]}" >>$tmpfile
     done
 fi
+
+echo
 
 # if its the beginning of the year check for wrong dates
 if (( $(date +%m) < 3 )); then 
