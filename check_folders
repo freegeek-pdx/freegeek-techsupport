@@ -115,6 +115,24 @@ if (( ${#unresolved_ticket_list[@]} > 0 )); then
     done
 fi
 
+# if its the beginning of the year check for wrong dates
+if (( $(date +%m) < 3 )); then 
+    echo "The following directories  appear to be  older than 300 days" >> $tmpfile 
+    echo "It appears someone may not know what year it is." >>$tmpfile
+    for dir in $(${path}newyearcheck $backup_path); do
+        ticket=$(echo $dir | awk -F - '{print $2}')
+        while read line; do
+            if [[ $line =~  "Subject:" ]]; then 
+                subject=$(echo -n $line | awk '{$1=""; print $0}')
+            elif [[ $line =~ "Status:" ]]; then
+                status=$(echo -n $line | awk '{$1=""; print $0}')
+            fi
+        done < <(wget --keep-session-cookies  --save-cookies cookies.txt  --post-data 'user=tsrobot&pass=EucNabs4' -qO-  todo.freegeek.org/REST/1.0/ticket/${ticket}/show/)
+        size=$(du -sh ${backup_path}/${dir} | awk '{print $1}')
+            printf "/var/tsbackup/%s\t%s\t%s\t%s\n" "$dir" "$size" "$status" "$subject" >>$tmpfile
+    done     
+fi
+
 if [[ $mail ]]; then
 	 mailx -n -r $sender -s "Folders that can be deleted on $backup_host" $recipient < $tmpfile
 	
