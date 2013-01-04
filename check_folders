@@ -122,7 +122,7 @@ fi
 echo >>$tmpfile
 if (( $(date +%m) < 3 )); then 
     echo "The following directories  appear to be  older than 300 days" >> $tmpfile 
-    echo "It appears someone may not know what year it is." >>$tmpfile
+    echo "Someone may not know what year it is." >>$tmpfile
     for dir in $(${path}newyearcheck $backup_path); do
         ticket=$(echo $dir | awk -F - '{print $2}')
         while read line; do
