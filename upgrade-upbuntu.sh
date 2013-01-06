@@ -115,7 +115,7 @@ EOF
 # install xubuntu, freegeek-stuff
 sudo apt-get purge lightdm
 sudo mv /etc/lightdm/ /root/
-sudo apt-get install xubuntu-desktop freegeek-default-settings lightdm-gtk-greeter lightdm
+sudo apt-get install xubuntu-desktop freegeek-default-settings lightdm-gtk-greeter lightdm freegeek-extras
 
 
 # remove unity etc
