@@ -2,7 +2,6 @@
 # this file has the following standard layout
 # CONFIGURATION
 # help function
-# INCLUDES
 #FUNCTIONS
 # process option arguments
 # MAIN
@@ -19,9 +18,10 @@ cat <<EOF
 usage: $0 [OPTION]...
 Upgrade from Ubuntu 10.4 to Xubuntu12.04 with Freegeek Tweaks
         
--h                      prints this message
+-h                      Prints this message.
 -n                      No remove. Do not remove any installed packages 
--t                      ticket number            
+-t [NUMBER]             Ticket number.   
+-l [LOGFILE]            Write to logfile as well as terminal.
 
 Upgrades from Ubuntu 10.4 to Xubuntu12.04 with Freegeek Tweaks. 
 Creates a backup first.
@@ -36,15 +36,69 @@ else
         exit 0
 fi
 }
-# INCLUDES
+
 #FUNCTIONS
 
+check_file_write(){
+        local file=$1
+        touch $file &>/dev/null
+        return $?
+}
+
+# write to error log and/or standard out 
+write_msg(){
+local msg="$@"  
+for line in "$msg"; do 
+        echo "$line"
+        if [[ $logfile ]]; then
+                if ! echo "$line" >>$logfile; then 
+                # should not hit here as already checked
+                echo "Could not write to Log File: $logfile"
+                exit 3
+                fi
+        fi
+done
+return 0
+}
+
+
+test_for_root(){
+        if [[ $EUID -ne 0 ]]; then
+                return 1
+        else
+                return 0
+        fi
+}
+
+
+# remove fregeek refs from etc/apt/sources.list etc
+remove_fg(){
+    local returnval=0
+    if ! sed -i    's/^.*freegeek/# &/g' /etc/apt/sources.list; then
+        write_msg 'failed to remove fg line form sources.list'
+        returnval=1
+    fi
+    if ! mv /etc/apt/sources.list.d/freegeek-extras.list /etc/apt/sources.list.d/freegeek-extras.list.bak.$now ; then
+        write_msg "failed to move /etc/apt/sources.list.d/freegeek-extras.list"
+        returnval=1
+    fi
+    if [[ -e /etc/apt/sources.list.d/freekbox.list ]]; then
+        if ! mv /etc/apt/sources.list.d/freekbox.list /etc/apt/sources.list.d/freekbox.list.bak.$now; then
+            write_msg  "failed to move /etc/apt/sources.list.d/freekbox.list"
+            returnval=1
+        fi
+    fi
+    return $returnval
+}
+
+
 # process option arguments
-while getopts "hnt:" option; do            # w: place variable following w in $OPTARG
+while getopts "hnt:l:" option; do            # w: place variable following w in $OPTARG
         case "$option" in
                 h) help;;
                 n)no_remove=true;;
                 t)ticket=$OPTARG;;
+                l)logfile=$OPTARG;;
                 [?])  echo "bad option supplied" ; 
                 help;;
         esac
@@ -53,14 +107,27 @@ done
 #MAIN
 
 
+
+if [[ $logfile ]]; then
+    if ! check_file_write $logfile ; then
+        echo "could not write to $logfile"
+        exit 3
+    fi
+fi
+
+if ! test_for_root; then
+    write_msg "You must execute this script with root privileges"
+    write_msg "i.e. using sudo"
+fi
+
 # get tstools
 if ! wget ${package_loc}${tst_pkg} ; then
-    echo "failed to download tstools"
+   write_msg "failed to download tstools"
     exit 3
 fi
 
 if ! tar -xvzf $tst_pkg; then
-    echo "could not extract $tst_pkg"
+    write_msg "could not extract $tst_pkg"
     exit 3
 fi
 
@@ -83,24 +150,50 @@ if [[ -z $ticket ]]; then
 fi
 
 if ! sudo $tsnb -c $ticket; then
-    echo "failed to backup system!"
+    write_msg "failed to backup system!"
     exit 5
 fi
 
-# remove fregeek refs from etc/apt/sources.list etc
-sed -i    's/^.*freegeek/# &/g' /etc/apt/sources.list
+# remove free geek sources
+if ! remove_fg; then
+    write_msg "Could not remove Free Geek sources, preceeding anyway..."
+fi
 
-mv /etc/apt/sources.list.d/freegeek-extras.list /etc/apt/sources.list.d/freegeek-extras.list.bak.$now
-mv /etc/apt/sources.list.d/freekbox.list /etc/apt/sources.list.d/freekbox.list.bak.$now
+
+# do dist-upgrade
+if ! apt-get update; then
+    write_msg "could not update package list"
+    exit 3
+fi
+
+if ! apt-get -y dist-upgrade; then
+    write_msg "could not perform dist-upgrade"
+    exit 4
+fi
 
 # do release upgrade
 if ! do-release-upgrade ; then
-    echo "Sigh. Something went wrong"
-    echo "You will have to fix this by hand"
-    echo "You might need to reinstall"
-    echo "check your backup ${now}-${ticket} on $backup_host is valid"
+    write_msg "Sigh. Something went wrong"
+    write_msg "You will have to fix this by hand"
+    write_msg "You might need to reinstall"
+    write_msg "check your backup ${now}-${ticket} on $backup_host is valid"
     exit 7
 fi
+
+# install xubuntu
+apt-get purge lightdm
+mv /etc/lightdm/ /root/
+xub_msg=$(apt-get install xubuntu-desktop)
+if [[ $? -ne 0 ]]; then
+    write_msg "could not install xubuntu! aborting..."
+    write_msg "apt-get output:"
+    write_msg "$xub_msg"
+    exit 5
+else
+    write_msg "succesfully installed Xubuntu"
+fi 
+
+
 
 # add back freegeek to /etc/apt/sources.list.d
 
@@ -111,32 +204,43 @@ cat << 'EOF'  > /etc/apt/sources.list.d/freegeek-extras.list
 deb http://apt.freegeek.org/ubuntu precise main
 EOF 
 
-
-# install xubuntu, freegeek-stuff
-sudo apt-get purge lightdm
-sudo mv /etc/lightdm/ /root/
-sudo apt-get install xubuntu-desktop freegeek-default-settings lightdm-gtk-greeter lightdm freegeek-extras
-
+if [[ ! -e /etc/apt/sources.list.d/freegeek-extras.list ]]; then
+    write_msg "Could not add Free Geek Sources"
+    write_mg  "You will need to fix this and install freegeek-extras and freegeek-default-settings manually"
+elif ! apt-get install freegeek-default-settings freegeek-extras; then
+    write_msg "Could not install freegeek-extras and freegeek-default-settings"
+    write_msg "You will need to do this  manually" 
+else
+    write_msg "Added back Free Geek sources"    
+fi
 
 # remove unity etc
 
 if [[ ! $no_remove ]];  then
-    big_ass_list_of_packages_to_remove="gnome-control-center gnome-font-viewer gnome-media gnome-menus gnome-nettool gnome-power-manager gnome-screenshot gnome-session gnome-session-canberra gnome-system-log gnome-system-monitor gnome-terminal gcalctool eog nautilus nuatilus-sendto unity unity-2d unity-greeter gnome-bluetooth gnome-disk-utility gnome-orca gnome-screensaver gnome-sudoku gnomine ubuntuone-client-gnome
-"
+    big_ass_list_of_packages_to_remove="gnome-control-center gnome-font-viewer gnome-media gnome-menus gnome-nettool gnome-power-manager gnome-screenshot gnome-session gnome-session-canberra gnome-system-log gnome-system-monitor gnome-terminal gcalctool eog nautilus nuatilus-sendto unity unity-2d unity-greeter gnome-bluetooth gnome-disk-utility gnome-orca gnome-screensaver gnome-sudoku gnomine ubuntuone-client-gnome"
+
     for package in big_ass_list_of_packages_to_remove; do
        if  dpkg-query  -l  bash  2>/dev/null  | grep -q ^.i; then
             list_of_packages_to_remove="$list_of_packages_to_remove $package"
        fi
     done
 
-    sudo apt-get remove $list_of_packages_to_remove
-
+    remove_msg=$(apt-get remove $list_of_packages_to_remove)
+    if [[ $? - ne 0 ]]; then
+        write_msg "Could not remove (some of) $list_of_packages_to_remove"
+        write_msg "apt-get remove output:"
+        write_msg "$remove_msg"
+        exit 6
+    else
+        write_msg "Sucessfully removed $list_of_packages_to_remove"
+    fi
 fi
 
 # do a happy dance
 
 do_happy_dance(){
-    echo "It worked! $HOST does a happy dance! You should too."
+    write_msg "It worked! $HOST does a happy dance! You should too."
 }
 
 do_happy_dance
+exit 0
