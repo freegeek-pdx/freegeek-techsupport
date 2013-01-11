@@ -101,7 +101,7 @@ for dir in $(${path}outdated $backup_path); do
             unresolved[${ticket}_$value]=${!value}
         done
     fi
-    unset status        # otherwise it occasionally gets reused
+    unset subject # otherwise it occasionally gets reused
 done
 
 echo >> $tmpfile
