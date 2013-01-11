@@ -70,16 +70,16 @@ if [[ ! -e $backup_path ]]; then
 fi
 
 tmpfile="$HOME/.folder_check.tmp"
-
 diskfree="$( df -h | grep "$backup_path" | awk '{print "Used: " $3 " Free: " $4}')"
 echo "Usage Stats for $backup_path on $backup_host:" >>$tmpfile
 echo $diskfree >>$tmpfile
-echo >>$tmpfile
 
-# collect unresolved ticket details
+
+# declare assoc arrays for ticket lists
+declare -A resolved
 declare -A unresolved
+declare -A unsound
 
-echo "The following directories are older than 45 days and can be deleted:" >>$tmpfile
 for dir in $(${path}outdated $backup_path); do
     ticket=$(echo $dir | awk -F - '{print $2}')
     while read line; do
@@ -90,11 +90,18 @@ for dir in $(${path}outdated $backup_path); do
         fi
     done < <(wget --keep-session-cookies  --save-cookies cookies.txt  --post-data 'user=tsrobot&pass=EucNabs4' -qO-  todo.freegeek.org/REST/1.0/ticket/${ticket}/show/)
     size=$(du -sh ${backup_path}/${dir} | awk '{print $1}')
-    if [[ $status =~ "resolved" ]]; then
-        printf "/var/tsbackup/%s\t%s\t%s\t%s\n" "$dir" "$size" "$status" "$subject" >>$tmpfile
-    else
-        
-        # push ticket on to list of unresolved tickets
+
+    if [[ $status =~ "resolved" ]]; then    # push ticket on to list
+                                            #  of resolved tickets
+
+        resolved_ticket_list=(${resolved_ticket_list[@]}  "$ticket")
+        # store details in associative array (fake multi_dimensional)
+        for value in dir size status subject; do
+            resolved[${ticket}_$value]=${!value}
+        done
+
+    else        # push ticket on to list of unresolved tickets
+
         unresolved_ticket_list=(${unresolved_ticket_list[@]}  "$ticket")
         # store details in associative array (fake multi_dimensional)
         for value in dir size status subject; do
@@ -104,7 +111,16 @@ for dir in $(${path}outdated $backup_path); do
     unset subject # otherwise it occasionally gets reused
 done
 
-echo >> $tmpfile
+if (( ${#resolved_ticket_list[@]} > 0 )); then
+    echo >>$tmpfile
+    echo "The following directories are older than 45 days and can be deleted:" >>$tmpfile
+#printf "/var/tsbackup/%s\t%s\t%s\t%s\n" "$dir" "$size" "$status" "$subject" >>$tmpfile
+    for resolved_ticket in ${resolved_ticket_list[@]}; do
+        # referencing our fake multi-D array
+        printf "/var/tsbackup/%s\t%s\t%s\t%s\n" "${resolved[${resolved_ticket}_dir]}" "${resolved[${resolved_ticket}_size]}" "${resolved[${resolved_ticket}_status]}" "${resolved[${resolved_ticket}_subject]}" >>$tmpfile
+    done
+    echo >> $tmpfile
+fi
 
 # we have tickets that have a status that is not resolved
 if (( ${#unresolved_ticket_list[@]} > 0 )); then
@@ -120,10 +136,7 @@ fi
 
 
 # if its the beginning of the year check for wrong dates
-echo >>$tmpfile
 if (( $(date +%m) < 3 )); then 
-    echo "The following directories  appear to be  older than 300 days" >> $tmpfile 
-    echo "Someone may not know what year it is." >>$tmpfile
     for dir in $(${path}newyearcheck $backup_path); do
         ticket=$(echo $dir | awk -F - '{print $2}')
         while read line; do
@@ -134,15 +147,29 @@ if (( $(date +%m) < 3 )); then
             fi
         done < <(wget --keep-session-cookies  --save-cookies cookies.txt  --post-data 'user=tsrobot&pass=EucNabs4' -qO-  todo.freegeek.org/REST/1.0/ticket/${ticket}/show/)
         size=$(du -sh ${backup_path}/${dir} | awk '{print $1}')
-            printf "/var/tsbackup/%s\t%s\t%s\t%s\n" "$dir" "$size" "$status" "$subject" >>$tmpfile
+        unsound_ticket_list=(${unsound_ticket_list[@]}  "$ticket")
+        # store details in associative array (fake multi_dimensional)
+        for value in dir size status subject; do
+            unsound[${ticket}_$value]=${!value}
+        done
     done     
+    
+    if (( ${#unsound_ticket_list[@]} > 0 )); then
+        echo  >>$tmpfile
+        echo "The following directories  appear to be  older than 300 days" >> $tmpfile 
+        echo "Someone may not know what year it is." >>$tmpfile
+        #loop over list of unresolved tickets
+        for unsound_ticket in ${unsound_ticket_list[@]}; do
+        # referencing our fake multi-D array
+        printf "/var/tsbackup/%s\t%s\t%s\t%s\n" "${unsound[${unsound_ticket}_dir]}" "${unsound[${unsound_ticket}_size]}" "${unsound[${unsound_ticket}_status]}" "${unsound[${unsound_ticket}_subject]}" >>$tmpfile
+    done
+    
+    fi
 fi
 
 if [[ $mail ]]; then
 	 mailx -n -r $sender -s "Folders that can be deleted on $backup_host" $recipient < $tmpfile
-	
-	# echo "mailx -n -r $sender -s Folders that can be deleted on $backup_host $recipient < $tmpfile"
 else
 	cat $tmpfile
 fi
-rm $tmpfile
+rm $tmpfile 
