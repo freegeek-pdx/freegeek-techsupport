@@ -78,12 +78,12 @@ remove_fg(){
         write_msg 'failed to remove fg line form sources.list'
         returnval=1
     fi
-    if ! mv /etc/apt/sources.list.d/freegeek-extras.list /etc/apt/sources.list.d/freegeek-extras.list.bak.$now ; then
+    if ! rm /etc/apt/sources.list.d/freegeek-extras.list  ; then
         write_msg "failed to move /etc/apt/sources.list.d/freegeek-extras.list"
         returnval=1
     fi
     if [[ -e /etc/apt/sources.list.d/freekbox.list ]]; then
-        if ! mv /etc/apt/sources.list.d/freekbox.list /etc/apt/sources.list.d/freekbox.list.bak.$now; then
+        if ! rm /etc/apt/sources.list.d/freekbox.list ; then
             write_msg  "failed to move /etc/apt/sources.list.d/freekbox.list"
             returnval=1
         fi
@@ -118,6 +118,7 @@ fi
 if ! test_for_root; then
     write_msg "You must execute this script with root privileges"
     write_msg "i.e. using sudo"
+    exit 3
 fi
 
 # get tstools
@@ -135,21 +136,20 @@ fi
 
 # do backup
 
-if [[ -e $PWD/tstools_package/ts_network_backup ]]; then
-    tsnb="$PWD/tstools_package/ts_network_backup" 
+if [[ -e $PWD/tstools_package/ ]]; then
+    tsnb="$PWD/tstools_package/" 
 else 
-    tsnb=$(find -name ts_network_backup -print)
+    tsnb=$(find -name tstools_package -print)
 fi
-
-chmod +x $tsnb
-
+cd $tsnb
+chmod +x ./ts_network_backup
 now=$(date +%Y%m%d)
 if [[ -z $ticket ]]; then
     echo "Enter ticket number for this job"
     read ticket
 fi
 
-if ! sudo $tsnb -c $ticket; then
+if ! sudo ./ts_network_backup -c $ticket; then
     write_msg "failed to backup system!"
     exit 5
 fi
