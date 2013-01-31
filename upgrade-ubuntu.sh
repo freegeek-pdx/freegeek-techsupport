@@ -246,15 +246,15 @@ elif [[ $second_run ]]; then
     write_msg "preparing to remove unused packages"
 
     if [[ ! $no_remove ]];  then
-        big_ass_list_of_packages_to_remove="gnome-control-center gnome-font-viewer gnome-media gnome-menus gnome-nettool gnome-power-manager gnome-screenshot gnome-session gnome-session-canberra gnome-system-log gnome-system-monitor gnome-terminal gcalctool eog nautilus nautilus-sendto unity unity-2d unity-greeter gnome-bluetooth gnome-disk-utility gnome-orca gnome-screensaver gnome-sudoku gnomine ubuntuone-client-gnome"
+        big_ass_list_of_packages_to_remove="gnome-control-center gnome-font-viewer gnome-media gnome-menus gnome-nettool gnome-power-manager gnome-screenshot gnome-session gnome-session-canberra gnome-system-log gnome-system-monitor gnome-terminal gcalctool eog nautilus nautilus-sendto unity unity-2d unity-greeter gnome-bluetooth gnome-disk-utility gnome-orca gnome-screensaver gnome-sudoku gnomine ubuntuone-client-gnome  geoclue-ubuntu-geoip gir1.2-gnomebluetooth-1.0 gnome-control-center-data gnome-dictionary gnome-online-accounts gnome-search-tool gnome-session-common indicator-printers libbamf3-0 libgmp3c2 libgnome-media-profiles-3.0-0 libqt4-svg libunity-misc4 nux-tools unity-2d-shell unity-2d-spread unity-asset-pool unity-common unity-lens-applications unity-lens-files unity-lens-music unity-lens-video unity-scope-video-remote"
 
         for package in $big_ass_list_of_packages_to_remove; do
            if  dpkg-query  -l  bash  2>/dev/null  | grep -q ^.i; then
                 list_of_packages_to_remove="$list_of_packages_to_remove $package"
            fi
         done
-
-        remove_msg=$(apt-get remove $list_of_packages_to_remove)
+        write_msg "removing: $list_of_packages_to_remove"
+        remove_msg=$(apt-get -y remove $list_of_packages_to_remove)
         if [[ $? -ne 0 ]]; then
             write_msg "Could not remove (some of) $list_of_packages_to_remove"
             write_msg "apt-get remove output:"
@@ -264,6 +264,18 @@ elif [[ $second_run ]]; then
             write_msg "Sucessfully removed $list_of_packages_to_remove"
         fi
     fi
+    
+    # Do basic cleanup
+    write_msg "cleaning up unused packages"
+    autoremove_msg=$(apt-get -y autoremove)
+    if [[ $? -ne 0 ]]; then
+        write_msg "Could not autoremove packages"
+        write_msg "apt-get autoremove output:"
+        write_msg "$remove_msg"
+        exit 6
+    else
+        write_msg "Cleanup sucessful"
+    fi
 
     # do a happy dance
 
@@ -272,5 +284,7 @@ elif [[ $second_run ]]; then
     }
 
     do_happy_dance
+    write_msg "Don't forget to set user sessions to Free Geek Deafault Session"
+    write_msg "and restore passwords (etc/shadow) if these have been changed."
     exit 0
 fi
