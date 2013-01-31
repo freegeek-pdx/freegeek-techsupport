@@ -243,6 +243,7 @@ elif [[ $second_run ]]; then
     fi
 
     # remove unity etc
+    write_msg "preparing to remove unused packages"
 
     if [[ ! $no_remove ]];  then
         big_ass_list_of_packages_to_remove="gnome-control-center gnome-font-viewer gnome-media gnome-menus gnome-nettool gnome-power-manager gnome-screenshot gnome-session gnome-session-canberra gnome-system-log gnome-system-monitor gnome-terminal gcalctool eog nautilus nautilus-sendto unity unity-2d unity-greeter gnome-bluetooth gnome-disk-utility gnome-orca gnome-screensaver gnome-sudoku gnomine ubuntuone-client-gnome"
