@@ -11,6 +11,7 @@
 package_loc="http://tsbackup/"
 tst_pkg="tstools.tar.gz"
 backup_host="tsbackup"
+version=$(lsb_release -a 2> /dev/null | grep Release | awk '{print $2}')
 
 help(){
 cat <<EOF 
@@ -19,6 +20,7 @@ usage: $0 -s|c [OPTION]...
 Upgrade from Ubuntu 10.4 to Xubuntu12.04 with Freegeek Tweaks
         
 -h                      Prints this message.
+-f                      Force overwrite of existing backup 
 -n                      No remove. Do not remove any installed package
 -t [NUMBER]             Ticket number.   
 -l [LOGFILE]            Write to logfile as well as terminal.
@@ -92,12 +94,27 @@ remove_fg(){
     return $returnval
 }
 
+# ensure upgrade is set to lts in /etc/update-manager/release-upgrades
+check_release-upgrades(){
+    # this is where update-manger stores the config option for prompting 
+    # for upgrades. It can be set to normal,lts or never
+    release_file="/etc/update-manager/release-upgrades"
+    # always set to lts  
+    if ! sed -i.bak -e 's/prompt=never/prompt=lts/' $release_file;then
+        return 1
+    elif ! sed -i.bak -e 's/prompt=normal/prompt=lts/' $release_file; then
+        return 1
+    else
+        return 0
+    fi
+}
 
 # process option arguments
-while getopts "hnt:l:" option; do            # w: place variable following w in $OPTARG
+while getopts "hfnt:l:" option; do            # w: place variable following w in $OPTARG
         case "$option" in
                 h) help;;
-                n)no_remove=true;;
+                f) force_overwrite="true";;
+                n)no_remove="true";;
                 t)ticket=$OPTARG;;
                 l)logfile=$OPTARG;;
                 [?])  echo "bad option supplied" ; 
@@ -107,8 +124,11 @@ done
 
 #MAIN
 
-
-
+if [[ $logfile ]]; then
+    if ! check_file_write $logfile ; then
+        echo "could not write to $logfile"
+        exit 3
+    fi
 
 if ! test_for_root; then
     write_msg "You must execute this script with root privileges"
@@ -116,14 +136,12 @@ if ! test_for_root; then
     exit 3
 fi
 
-
-if [[ $logfile ]]; then
-    if ! check_file_write $logfile ; then
-        echo "could not write to $logfile"
-        exit 3
-    fi
+if [[ $version != "10.04" ]] ; then
+    write_msg "This computer is not running Ubuntu 10.04"
+    write_msg "This script is designed and tested only for 10.04"
+    write_msg "It might work for other LTS versions, if you update the script"
+    exit 3
 fi
-
 
 if [[ -e /home/.first_run_success ]]; then
     second_run="true"
@@ -160,10 +178,23 @@ if [[ $first_run ]]; then
         echo "Enter ticket number for this job"
         read ticket
     fi
-
-    if ! sudo ./ts_network_backup -c $ticket; then
+    # force overwrite of existing backup
+    if [[ $force_overwrite ]]; then
+        backup_command="./ts_network_backup -Fc"
+    else
+        backup_command="./ts_network_backup -c"
+    fi
+    # backup using ts_network_backup
+    if ! $backup_command $ticket; then
         write_msg "failed to backup system!"
         exit 5
+    fi
+    
+    # ensure upgrade is set to lts in /etc/update-manager/release-upgrades
+    if ! check_release-upgrades; then
+        write_msg "This machine is set never to update to a new version"
+        write_msg "Unable to update this"
+        exit 6
     fi
 
     # remove free geek sources
@@ -240,6 +271,13 @@ elif [[ $second_run ]]; then
         write_msg "You will need to do this  manually" 
     else
         write_msg "Added back Free Geek sources"    
+    fi
+
+    # ensure upgrade is set to lts in /etc/update-manager/release-upgrades
+    if ! check_release-upgrades; then
+        write_msg "This machine is set never to update to a new version"
+        write_msg "Unable to update this"
+        exit 6
     fi
 
     # remove unity etc
