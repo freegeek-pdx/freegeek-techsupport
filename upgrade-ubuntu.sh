@@ -129,6 +129,7 @@ if [[ $logfile ]]; then
         echo "could not write to $logfile"
         exit 3
     fi
+fi
 
 if ! test_for_root; then
     write_msg "You must execute this script with root privileges"
