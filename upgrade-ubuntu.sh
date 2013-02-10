@@ -140,6 +140,23 @@ fi
 
 if [[ -e /home/.first_run_success ]]; then
     second_run="true"
+elif [[ -e /home/.first_run_start ]]; then
+    write_msg "It looks like either:"
+    write_msg "The first run did not complete sucessfully"
+    write_msg "You ignored the instructions and chose reboot"
+    write_msg "when the upgrade finished as it was prompting"
+    write_msg " "
+    write_msg "If it was the latter and you are sure it worked sucessfully"
+    write_msg "type yes at the prompt"
+    write_msg " "
+    write_msg "Are you sure the first part ran successfully?"
+    read answer
+    if [[ $answer == "yes" ]]; then
+        second_run="true"
+    else
+        write_msg "aborting..."
+        exit 2
+    fi
 else
     first_run="true"
 fi
@@ -153,6 +170,7 @@ if [[ $first_run ]]; then
         exit 3
     fi
     write_msg "Running the first part of the upgrade process"
+    touch /home/.first_run_start
     # get tstools
     if ! wget ${package_loc}${tst_pkg} ; then
        write_msg "failed to download tstools"
@@ -230,6 +248,7 @@ if [[ $first_run ]]; then
         write_msg "check your backup ${now}-${ticket} on $backup_host is valid"
         exit 7
     else
+        rm /home/.first_run_start
         touch /home/.first_run_success
         write_msg  "Sucessfully completed first part of backup"
         write_msg  "Reboot and run the script a second time"
