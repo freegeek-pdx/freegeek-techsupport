@@ -286,7 +286,7 @@ elif [[ $second_run ]]; then
     if [[ ! -e /etc/apt/sources.list.d/freegeek-extras.list ]]; then
         write_msg "Could not add Free Geek Sources"
         write_mg  "You will need to fix this and install freegeek-extras and freegeek-default-settings manually"
-    elif ! apt-get -y  install freegeek-default-settings freegeek-extras; then
+    elif ! apt-get -y  install freegeek-default-settings freegeek-extras-pdx; then
         write_msg "Could not install freegeek-extras and freegeek-default-settings"
         write_msg "You will need to do this  manually" 
     else
