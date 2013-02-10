@@ -137,12 +137,6 @@ if ! test_for_root; then
     exit 3
 fi
 
-if [[ $version != "10.04" ]] ; then
-    write_msg "This computer is not running Ubuntu 10.04"
-    write_msg "This script is designed and tested only for 10.04"
-    write_msg "It might work for other LTS versions, if you update the script"
-    exit 3
-fi
 
 if [[ -e /home/.first_run_success ]]; then
     second_run="true"
@@ -152,6 +146,12 @@ fi
 
 
 if [[ $first_run ]]; then
+    if [[ $version != "10.04" ]] ; then
+        write_msg "This computer is not running Ubuntu 10.04"
+        write_msg "This script is designed and tested only for 10.04"
+        write_msg "It might work for other LTS versions, if you update the script"
+        exit 3
+    fi
     write_msg "Running the first part of the upgrade process"
     # get tstools
     if ! wget ${package_loc}${tst_pkg} ; then
