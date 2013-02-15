@@ -1,0 +1,30 @@
+#!/bin/bash
+host=$1
+toupper() { 
+    local char="$*"
+    out=$(echo $char | tr [:lower:] [:upper:]) 
+    local retval=$? 
+    echo "$out" 
+    unset out char 
+    return $retval 
+    }
+
+while [  1 ] ; do 
+    ping -c 1 $host &>/dev/null
+     if  [[ $? -eq 0 ]] ; then 
+         host=$(toupper $host)
+        for x in $(seq 1 3); do  
+            for note in 784 989 1174.6; do 
+                beep -f $note
+            done 
+            echo "$host IS UP!!!"
+            sleep 0.3s
+        done 
+         exit
+    else 
+        echo  "$host is still down " 
+        #date 
+        sleep 5s
+    fi
+done
+

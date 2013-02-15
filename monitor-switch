@@ -1,0 +1,19 @@
+#!/bin/bash
+
+monitor_choice=$(zenity --list --radiolist --column ' ' --column 'Monitor Setting' False "External Monitor Left" \
+True "External Monitor Right" \
+False "Second Monitor Off")
+
+echo $monitor_choice
+
+if [[ $monitor_choice =~ "Left" ]]; then
+  xrandr --output VGA-0 --auto --left-of DVI-0 --rotate normal
+  xrandr --output VGA-0 --auto --left-of DVI-0 --rotate normal
+elif [[ $monitor_choice =~ "Right" ]]; then
+  xrandr --output VGA-0 --auto --right-of DVI-0 --rotate normal
+  xrandr --output VGA-0 --auto --right-of DVI-0 --rotate normal
+elif [[ $monitor_choice =~ "Off" ]]; then 
+  xrandr --output VGA-0 --off 
+  xrandr --output VGA-0 --off
+fi
+

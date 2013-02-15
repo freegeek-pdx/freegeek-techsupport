@@ -1,0 +1,28 @@
+#!/bin/bash
+host=$1
+toupper() { 
+    local char="$*"
+    out=$(echo $char | tr [:lower:] [:upper:]) 
+    local retval=$? 
+    echo "$out" 
+    unset out char 
+    return $retval 
+    }
+
+while [  1 ] ; do 
+    ping -c 1 $host &>/dev/null
+     if  [[ $? -ne 0 ]] ; then 
+         host=$(toupper $host)
+        for x in $(seq 1 20); do  
+            beep -f 800 
+            echo "$host IS NO LONGER RESPONDING!!!"
+            sleep 0.3s
+        done 
+         exit
+    else 
+        echo -n "$host is still alive: " 
+        date 
+        sleep 30s
+    fi
+done
+

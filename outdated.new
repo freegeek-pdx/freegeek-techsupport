@@ -1,0 +1,27 @@
+#!/usr/bin/python
+
+
+import os
+import sys
+import StringIO
+import datetime
+
+# import modules form this path
+sys.path.append("/home/paulm/bin")
+import du
+
+today = datetime.datetime.today()
+timedelta = datetime.timedelta(45)
+cutoff = today - timedelta
+path = "/var/tsbackup"
+file_listing = os.listdir(path)
+for file in file_listing:
+	flist = file.split('-')
+	mydate = flist[0]
+	fdate_string = "%s-%s-%s" % (mydate[0:4],mydate[4:6],mydate[6:8])
+	try:
+		fdate = datetime.datetime.strptime( fdate_string , '%Y-%m-%d')
+		if fdate < cutoff:
+			print file
+	except:
+		pass

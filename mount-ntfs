@@ -1,0 +1,11 @@
+#!/bin/bash
+while read line ; do
+filesystem=$(echo "$line" | awk '{print $NF}')
+location=$(echo "$line" | awk '{print $1}')
+mountpoint="/mnt/$(echo $location | awk -F / '{print $3}')"
+if [[ $filesystem =~ NTFS ]]; then
+echo "mounting  $filesystem filesystem $location @  $mountpoint"
+mount -t ntfs $location $mountpoint  
+fi
+done < <(fdisk -l | grep '^/dev')  
+
