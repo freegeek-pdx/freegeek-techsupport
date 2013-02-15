@@ -1,0 +1,168 @@
+body {
+        background-image:url('background.jpg');
+        background-position:top left;
+        background-repeat:no-repeat;
+        background-attachment: fixed;
+        background-size: cover;
+    } 
+
+
+div.transbox {
+        background-color:#999999;
+        width: 550px;
+        /* for IE */
+        filter:alpha(opacity=80);
+        /* CSS3 standard */
+        opacity:0.8;
+        margin-left:50px;
+        margin-bottom: 5px;
+        padding-top: 1px;
+        padding-bottom: 1px;
+        padding-left: 10px;
+        padding-right: 10px;
+        }
+ 
+
+a:link {
+        color:#5F4A63;
+        text-decoration:none;
+        }
+a:visited {
+        color:#5F4A63;
+        text-decoration:none;
+        }
+a:hover {
+        color:#C9C183;
+        text-decoration:underline;
+        }
+        
+
+p       {
+        font: Sabon,Garamond,Bodini,Times;
+        font-size: 12pt;
+        //margin-top: 5px;
+        }
+p.sans  {
+        font-family: helvetica,  arial, verdana,  sans-serif;
+        font-size: 12pt;
+        //margin-top: 5px;
+        }
+p.big   {
+        font: Sabon,Garamond,Bodini,Times;
+        font-size: 14pt;
+        //margin-top: 5px;
+        }
+p.sans-big {
+        font-family: helvetica,  arial, verdana,  sans-serif;
+        font-size: 12pt;
+        margin: 10px;
+        }
+p.small {
+        font: Sabon,Garamond,Bodini,Times;
+        font-size: 10pt;
+        //margin-top: 5px;
+        }
+p.sans-small {
+        font-family: helvetica,  arial, verdana,  sans-serif;
+        font-size: 10pt;
+        //margin-top: 5px;
+        }
+
+
+td      {
+        font: Sabon,Garamond,Bodini,Times;
+        font-size: 12pt;
+        padding: 5px;
+        }
+td.sans {
+        font-family: helvetica,  arial, verdana,  sans-serif;
+        font-size: 12pt;
+        }
+
+th      {
+        font: Sabon,Garamond,Bodini,Times;
+        font-size: 12pt;
+        }		
+th.sans {
+        font-family: helvetica,  arial, verdana,  sans-serif;
+        font-size: 12pt;
+        }
+
+
+ul.plain    {
+        list-style:none;		
+        }
+
+li      {
+        font: Sabon,Garamond,Bodini,Times;
+        font-size: 12pt;
+        }
+li.sans {
+        font-family: helvetica,  arial, verdana,  sans-serif;
+        font-size: 12pt;
+        }
+
+
+dt {
+        font: Sabon,Garamond,Bodini,Times;
+        font-size: 12pt;
+        //padding: 5px;
+        }
+dt.sans {
+        font-family: helvetica,  arial, verdana,  sans-serif;
+        font-size: 12pt;
+        }
+dt.title {
+        font-family: helvetica,  arial, verdana,  sans-serif;
+        font-size: 16pt;
+        font-weight:bold;
+        }
+dd {
+        font: Sabon,Garamond,Bodini,Times;
+        font-size: 12pt;
+        //padding: 5px;
+        }
+dd.sans {
+        font-family: helvetica,  arial, verdana,  sans-serif;
+        font-size: 12pt;
+        }
+          
+dl.flat {
+        width:100%;
+        overflow:hidden;
+        padding:0;
+        margin:0;
+        }
+dt.flat {
+        float: left;
+        width: 20%;
+        padding:0;
+        margin:0;
+        display: block;
+        clear: both;
+        }
+dd.flat {
+        float: right;
+        width: 80%;
+        padding:0;
+        margin:0;
+        display: block;
+        }
+
+
+h1.title {	
+        //display: inline;
+        font-family:helvetica,  arial, verdana,  sans-serif;
+        font-size:32px;
+        padding-top:12px;
+        padding-bottom:12px;
+        margin-left: 5px;
+        text-align: center;
+        //color: #5F4A63;
+        }		
+
+.dotted {
+        border-style: dotted;
+        border-width: 1px;
+        margin: -2px;
+        }       
