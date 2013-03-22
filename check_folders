@@ -139,7 +139,7 @@ fi
 # we have tickets that have a status that is not resolved
 if (( ${#unresolved_ticket_list[@]} > 0 )); then
     echo  >>$tmpfile
-    echo "The following tickets are older than 45 days but are not marked as resolved," >>$tmpfile
+    echo "The following tickets are older than $limit days but are not marked as resolved," >>$tmpfile
     echo "you should manually inspect the ticket before proceeding." >>$tmpfile
     #loop over list of unresolved tickets
     for unresolved_ticket in ${unresolved_ticket_list[@]}; do
