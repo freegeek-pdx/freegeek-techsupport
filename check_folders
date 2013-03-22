@@ -3,16 +3,17 @@ help(){
 cat <<EOF
 Usage : $0 [OPTION]
 Lists folders due for deletion (and sends email)
-	-m 		Send email rather than printing to stdout.
-        -p [PATH]       Use this option to specify the path of the backup dir
-	-r [EMAIL]	Specify optional adress to send email to. 
-			It is not necessary to specify an address. 
-			There is one set by default in the script.
-			Requires the -m option.
-	-f [EMAIL]	Set the from email adress. It is not necessary to 
-			specify an address. There is one set by default in
-			the script. Requires the -m option.
-	-h 		print this message
+    -l [LIMIT]      Check for folders older than LIMIT days. Default 45.
+	-m 		        Send email rather than printing to stdout.
+        -p [PATH]   Use this option to specify the path of the backup dir
+	-r [EMAIL]	    Specify optional adress to send email to. 
+			        It is not necessary to specify an address. 
+			        There is one set by default in the script.
+			        Requires the -m option.
+	-f [EMAIL]	    Set the from email adress. It is not necessary to 
+			        specify an address. There is one set by default in
+			        the script. Requires the -m option.
+	-h 		        print this message
 
 This script prints info about backup folders on tsbackup that are due for deletion. It is primarily intended for use with cron. 
 EOF
@@ -26,12 +27,13 @@ fi
 
 
 # process option arguments
-while getopts "hmr:f:p:" option; do
+while getopts "hl:mr:f:p:" option; do
         case "$option" in
                 h) help;;
+                l) limit=$OPTARG;; 
                 m) mail=true;;
-		r) recipient=$OPTARG;;
-		f) sender=$OPTARG;;
+		        r) recipient=$OPTARG;;
+		        f) sender=$OPTARG;;
                 p) backup_path=$OPTARG;;
                 \?)  echo "bad option supplied" 
                        help 2
@@ -58,7 +60,7 @@ fi
 #backup_host="tsbackup"
 backup_host=$HOSTNAME
 default_backup_path="/var/tsbackup"
-path=/home/paulm/bin/    # note trailing slash
+#path=/home/paulm/bin/    # note trailing slash
 
 if [[ -z $backup_path ]]; then
     backup_path=$default_backup_path
@@ -67,6 +69,10 @@ fi
 if [[ ! -e $backup_path ]]; then
     echo "$backup_path does not exist!"
     exit 3
+fi
+
+if [[ -z $limit ]]; then
+    limit=45
 fi
 
 tmpfile="$HOME/.folder_check.tmp"
@@ -80,7 +86,15 @@ declare -A resolved
 declare -A unresolved
 declare -A unsound
 
-for dir in $(${path}outdated $backup_path); do
+if [[ $limit -ne 45 ]]; then
+    limit_string="--limit $limit"
+fi
+
+if [[ $backup_path != "/var/tsbackup" ]]; then
+    backup_path_string="--path $backup_path"
+fi
+
+for dir in $(${path}outdated $backup_path_string $limit_string); do
     ticket=$(echo $dir | awk -F - '{print $2}')
     while read line; do
         if [[ $line =~  "Subject:" ]]; then 
@@ -113,7 +127,7 @@ done
 
 if (( ${#resolved_ticket_list[@]} > 0 )); then
     echo >>$tmpfile
-    echo "The following directories are older than 45 days and can be deleted:" >>$tmpfile
+    echo "The following directories are older than $limit days and can be deleted:" >>$tmpfile
 #printf "/var/tsbackup/%s\t%s\t%s\t%s\n" "$dir" "$size" "$status" "$subject" >>$tmpfile
     for resolved_ticket in ${resolved_ticket_list[@]}; do
         # referencing our fake multi-D array
