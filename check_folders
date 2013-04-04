@@ -59,7 +59,7 @@ fi
 
 #backup_host="tsbackup"
 backup_host=$HOSTNAME
-default_backup_path="/var/tsbackup"
+default_backup_path="/srv/tsbackup"
 #path=/home/paulm/bin/    # note trailing slash
 
 if [[ -z $backup_path ]]; then
