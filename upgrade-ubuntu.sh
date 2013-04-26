@@ -8,9 +8,9 @@
 
 # CONFIGURATION
 
-package_loc="http://tsbackup/"
+package_loc="http://oscar/"
 tst_pkg="tstools.tar.gz"
-backup_host="tsbackup"
+backup_host="oscar"
 version=$(lsb_release -a 2> /dev/null | grep Release | awk '{print $2}')
 
 help(){
@@ -64,6 +64,18 @@ done
 return 0
 }
 
+# be obnoxious and loop until they type  YES
+ans(){
+    answer=$1
+    if [[ $answer != "YES" ]]; then
+            write_msg "try that again"
+            write_msg "If you understand type YES"
+            read answer
+            ans $answer
+        else
+            return 0
+        fi
+}
 
 test_for_root(){
         if [[ $EUID -ne 0 ]]; then
@@ -238,8 +250,9 @@ if [[ $first_run ]]; then
     write_msg "Important hit the x key to exit when the system prompts you to reboot"
     write_msg "Otherwise you will end up having to run this part all over again"
 
-    write_msg "hit any key to continue..."
-    read -n 1 
+    write_msg "type YES to continue..."
+    read answer
+    ans $answer
     do-release-upgrade 
     if [[ $? -ne 0 ]]; then
         write_msg "Sigh. Something went wrong"
