@@ -5,7 +5,7 @@ Usage : $0 [OPTION]
 Lists folders due for deletion (and sends email)
     -l [LIMIT]      Check for folders older than LIMIT days. Default 45.
 	-m 		        Send email rather than printing to stdout.
-        -p [PATH]   Use this option to specify the path of the backup dir
+    -p [PATH]       Use this option to specify the path of the backup dir
 	-r [EMAIL]	    Specify optional adress to send email to. 
 			        It is not necessary to specify an address. 
 			        There is one set by default in the script.
