@@ -32,7 +32,7 @@ fi
 
 #FUNCTIONS
 get_diskspace(){
-    echo $(df | grep $backup_path) | awk '{print $4}')
+    echo $(df | grep $backup_path | awk '{print $4}')
 }
 
 get_dirsize(){
