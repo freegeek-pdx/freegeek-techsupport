@@ -81,6 +81,11 @@ elif [[ $sender && ! $mail ]]; then
         echo "The -f option requires the use of -m"
 fi
 
+# test for root
+if [[ $EUID -ne 0 ]]; then
+    echo "Are you root?"
+    exit 1
+fi
 
 # set default variables
 if [[ $mail ]]; then
