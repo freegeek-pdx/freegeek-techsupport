@@ -37,7 +37,7 @@ get_diskspace(){
 
 get_dirsize(){
     directory=$1
-    echo $(du -s ${backup_path}/${directory} | awk '{print $1}')
+    echo $(du -s ${directory} | awk '{print $1}')
 }
 
 compress_dir(){
@@ -46,14 +46,14 @@ compress_dir(){
     dir=$1
     if  (( $(get_dirsize $dir) >= $(get_diskspace) )); then
         return 1
-    elif tar -xjf "${dir}.tar.bz2" ; then
+    elif tar -czf "${dir}.tar.gz"  $dir 1>/dev/null; then
         if rm -r $dir; then
             return 0
         else
             return 2 
         fi
     else
-        return 3
+         return 3
     fi
 }
 
@@ -99,7 +99,7 @@ fi
 
 backup_host=$HOSTNAME
 default_backup_path="/srv/tsbackup"
-tmpfile="$HOME/.folder_check.tmp"
+tmpfile="$HOME/.folder_compact.tmp"
 
 if [[ -z $backup_path ]]; then
     backup_path=$default_backup_path
@@ -114,14 +114,11 @@ if [[ -z $limit ]]; then
     limit=14
 fi
 
-if [[ $limit -ne 14 ]]; then
-    limit_string="--limit $limit"
-fi
+limit_string="--limit $limit"
 
 if [[ $backup_path != "/var/tsbackup" ]]; then
     backup_path_string="--path $backup_path"
 fi
-
 
 # loop through directories to be compressed
 deleted=()
@@ -132,11 +129,16 @@ could_not_compress=()
 
 for directory in $(outdated $backup_path_string $limit_string); do
     dir="${backup_path}/${directory}"
+    if [[ $dir =~ "gz" ]]; then 
+        # already compressed -- do nothing
+        retval=255
+    else 
+        compress_dir $dir
+        retval=$?
+    fi
 
-    retval=$(compress_dir $dir)
     # returns on success, 1 if not enough space, 2 if compression succeds 
     # but removal fails, 3 if compression fails
-    
     if  (( $retval == 0 )); then
         deleted=( ${deleted[@]-} $(echo "$dir") )
     elif (( $retval == 1 )) ; then
@@ -146,14 +148,14 @@ for directory in $(outdated $backup_path_string $limit_string); do
     elif (( $retval == 3 )) ; then
         compress_fail=( ${compress_fail[@]-} $(echo "$dir") )
     else
-        echo "FAIL!FAIL!FAIL!"
-        exit 250
+        true
     fi
 done
 
 # loop a second time for directories to big to be compressed the first time
-for direc in $not_deleted; do
-    retval=$(compress_dir $dir)
+for dir in ${not_deleted[@]}; do
+    compress_dir $dir
+    retval=$?    
     if (( $retval == 0 )) ; then
         deleted=( ${deleted[@]-} $(echo "$dir") )
     elif (( $retval == 1 )) ; then
@@ -176,7 +178,7 @@ echo $diskfree >>$tmpfile
 
 if (( ${#deleted[@]} > 0 )); then
     echo "The following folders where sucessfully compressed" >> $tmpfile
-    for item in $deleted; do
+    for item in ${deleted[@]}; do
         echo "$item" >> $tmpfile
     done
     echo >> $tmpfile
@@ -184,7 +186,7 @@ fi
 
 if (( ${#compress_fail[@]} > 0 )); then
     echo "The following folders where not compressed" >> $tmpfile
-    for item in $compress_fail; do
+    for item in ${compress_fail[@]}; do
         echo "$item" >> $tmpfile
     done
     echo >> $tmpfile
@@ -193,7 +195,7 @@ fi
 
 if (( ${#delete_fail[@]} > 0 )); then
     echo "The following folders where  compressed but could not be deleted" >> $tmpfile
-    for item in $delete_fail; do
+    for item in ${delete_fail[@]}; do
         echo "$item" >> $tmpfile
     done
     echo >> $tmpfile
