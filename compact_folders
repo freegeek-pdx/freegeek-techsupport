@@ -1,0 +1,203 @@
+#!/bin/bash
+
+help(){
+cat <<EOF 
+
+usage: $0 [OPTION]
+    compresses backup folders 
+    -l [LIMIT]      Check for folders older than LIMIT days. Default 14.
+    -m                      Send email rather than printing to stdout.
+    -p [PATH]       Use this option to specify the path of the backup dir
+    -r [EMAIL]      Specify optional adress to send email to. 
+                    It is not necessary to specify an address. 
+                    There is one set by default in the script.
+                    Requires the -m option.
+    -f [EMAIL]      Set the from email adress. It is not necessary to 
+                    specify an address. There is one set by default in
+                    the script. Requires the -m option.
+
+	-h			prints this message
+
+This script compresses  about backup folders on tsbackup older than a certain date, by default 14 days. It is primarily intended for use with cron. 
+
+EOF
+
+# if $1 exists and is a number 0..255 return that otherwise return 0
+if [[ -n $1 && $(echo {0..255}) =~ $1 ]]; then
+        exit $1
+else
+	exit 0
+fi
+}
+
+#FUNCTIONS
+get_diskspace(){
+    echo $(df | grep $backup_path) | awk '{print $4}')
+}
+
+get_dirsize(){
+    directory=$1
+    echo $(du -s ${backup_path}/${directory} | awk '{print $1}')
+}
+
+compress_dir(){
+    # return 0 on success, 1 if not enough space, 2 if compression succeds 
+    # but removal fails, 3 if compression fails
+    dir=$1
+    if  (( $(get_dirsize $dir) >= $(get_diskspace) )); then
+        return 1
+    elif tar -xjf "${dir}.tar.bz2" ; then
+        if rm -r $dir; then
+            return 0
+        else
+            return 2 
+        fi
+    else
+        return 3
+    fi
+}
+
+#MAIN
+
+# process option arguments
+while getopts "hl:mr:f:p:" option; do
+        case "$option" in
+                h) help;;
+                l) limit=$OPTARG;;
+                m) mail=true;;
+                r) recipient=$OPTARG;;
+                f) sender=$OPTARG;;
+                p) backup_path=$OPTARG;;
+                \?)  echo "bad option supplied" 
+                       help 2
+        ;;
+        esac
+done
+
+# check input
+if [[ $recipient && ! $mail ]]; then
+    echo "The -r option requires the use of -m"
+elif [[ $sender && ! $mail ]]; then
+        echo "The -f option requires the use of -m"
+fi
+
+
+# set default variables
+if [[ $mail ]]; then
+    if [[ -z $recipient ]]; then
+        recipient="support-staff@lists.freegeek.org"
+    fi
+    if [[ -z $sender ]]; then
+                sender="paulm@freegeek.org "
+        fi
+fi
+
+backup_host=$HOSTNAME
+default_backup_path="/srv/tsbackup"
+tmpfile="$HOME/.folder_check.tmp"
+
+if [[ -z $backup_path ]]; then
+    backup_path=$default_backup_path
+fi
+
+if [[ ! -e $backup_path ]]; then
+    echo "$backup_path does not exist!"
+    exit 3
+fi
+
+if [[ -z $limit ]]; then
+    limit=14
+fi
+
+if [[ $limit -ne 14 ]]; then
+    limit_string="--limit $limit"
+fi
+
+if [[ $backup_path != "/var/tsbackup" ]]; then
+    backup_path_string="--path $backup_path"
+fi
+
+
+# loop through directories to be compressed
+deleted=()
+delete_fail=()
+compress_fail=()
+not_deleted=()
+could_not_compress=()
+
+for directory in $(outdated $backup_path_string $limit_string); do
+    dir="${backup_path}/${directory}"
+
+    retval=$(compress_dir $dir)
+    # returns on success, 1 if not enough space, 2 if compression succeds 
+    # but removal fails, 3 if compression fails
+    
+    if  (( $retval == 0 )); then
+        deleted=( ${deleted[@]-} $(echo "$dir") )
+    elif (( $retval == 1 )) ; then
+        not_deleted=( ${not_deleted[@]-} $(echo "$dir") )
+    elif (( $retval == 2 )) ; then
+        delete_fail=( ${delete_fail[@]-} $(echo "$dir") )    
+    elif (( $retval == 3 )) ; then
+        compress_fail=( ${compress_fail[@]-} $(echo "$dir") )
+    else
+        echo "FAIL!FAIL!FAIL!"
+        exit 250
+    fi
+done
+
+# loop a second time for directories to big to be compressed the first time
+for direc in $not_deleted; do
+    retval=$(compress_dir $dir)
+    if (( $retval == 0 )) ; then
+        deleted=( ${deleted[@]-} $(echo "$dir") )
+    elif (( $retval == 1 )) ; then
+        compress_fail=( ${compress_fail[@]-} $(echo "$dir") )
+    elif (( $retval == 2 )) ; then
+        delete_fail=( ${delete_fail[@]-} $(echo "$dir") )   
+    elif (( $retval == 3 )) ; then
+        compress_fail=( ${compress_fail[@]-} $(echo "$dir") )
+    else
+        echo "FAIL!FAIL!FAIL!"
+        exit 250
+    fi
+done
+
+diskfree="$( df -h | grep "$backup_path" | awk '{print "Used: " $3 " Free: " $4}
+')"
+echo "Usage Stats for $backup_path on $backup_host:" >>$tmpfile
+echo $diskfree >>$tmpfile
+
+
+if (( ${#deleted[@]} > 0 )); then
+    echo "The following folders where sucessfully compressed" >> $tmpfile
+    for item in $deleted; do
+        echo "$item" >> $tmpfile
+    done
+    echo >> $tmpfile
+fi
+
+if (( ${#compress_fail[@]} > 0 )); then
+    echo "The following folders where not compressed" >> $tmpfile
+    for item in $compress_fail; do
+        echo "$item" >> $tmpfile
+    done
+    echo >> $tmpfile
+fi
+
+
+if (( ${#delete_fail[@]} > 0 )); then
+    echo "The following folders where  compressed but could not be deleted" >> $tmpfile
+    for item in $delete_fail; do
+        echo "$item" >> $tmpfile
+    done
+    echo >> $tmpfile
+fi
+
+if [[ $mail ]]; then
+     mailx -n -r $sender -s "Folders compressed on  $backup_host" $recipient < $tmpfile
+else
+    cat $tmpfile
+fi
+rm $tmpfile
+
