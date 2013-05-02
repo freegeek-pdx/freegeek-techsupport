@@ -1,0 +1,66 @@
+#!/bin/bash
+# this file has the following standard layout
+# CONFIGURATION
+# help function
+# INCLUDES
+#FUNCTIONS
+# process option arguments
+# MAIN
+
+# CONFIGURATION
+
+help(){
+cat <<EOF 
+
+usage: $0 [OPTION]...
+This is the summary of what this script does.
+	
+-h			prints this message
+
+This is a bash script. This part is a longer explanation of what it does. 
+EOF
+
+# if $1 exists and is a number 0..255 return that otherwise return 0
+if [[ -n $1 && $(echo {0..255}) =~ $1 ]]; then
+        exit $1
+else
+	exit 0
+fi
+}
+# INCLUDES
+#FUNCTIONS
+push(){
+        arr=$1
+    arr=("${arr[@]}" "$1")
+      }
+# process option arguments
+while getopts "h" option; do		# w: place variable following w in $OPTARG
+	case "$option" in
+		h) help;;
+		[?])  echo "bad option supplied" ; 
+			help;;	
+	esac
+done
+
+#MAIN
+
+for warning in $(find /var/mail/virtual/freegeek.org/ -name "quota*"); do
+    mailidirpath=$(dirname $warning)
+    mailboxpath=$(echo $maildirpath | sed 's/Maildir//')
+    mailuser=$(echo $mailboxpath | awk -F '{print $NF}'
+    diskusage=$(du -sb $mailboxpath| awk '{print$1}')
+    mailusage=$(du -sb $maildirpath| awk '{print$1}')
+    spamusage=(du -sb ${mailboxpath}/.| awk '{print$1}')
+    quota=$(head -1 ${maildirpath}/maildirsize)
+    qpercent=$(echo "$quota * 90 /100" | bc)
+    usagepercent=$(echo "$diskusage / $quota * 100" | bc -l | cut -b 1-2)
+    mailpercent=$(echo "$mailusage / $quota * 100" | bc -l | cut -b 1-2)
+    spampercent=$(echo "$spamusage / $quota * 100" | bc -l | cut -b 1-2)
+    totalusage=$(echo "$diskusage / $quota" | bc -l | cut -b 1-2)
+    if (( $totalusage < $qpercent ));then
+        echo "rm $warning"
+    else
+        echo "${mailuser} is at ${usagepercent}% of quota, ${mailpercent}% of which is mail and ${spampercent}% is spam"
+    fi
+done
+
