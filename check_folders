@@ -95,7 +95,7 @@ if [[ $backup_path != "/var/tsbackup" ]]; then
 fi
 
 for dir in $(${path}outdated $backup_path_string $limit_string); do
-    ticket=$(echo $dir | awk -F - '{print $2}' sed 's/.tar.bz2//')
+    ticket=$(echo $dir | awk -F - '{print $2}' | sed 's/.tar.bz2//')
     while read line; do
         if [[ $line =~  "Subject:" ]]; then 
             subject=$(echo -n $line | awk '{$1=""; print $0}')
