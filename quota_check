@@ -60,6 +60,8 @@ tmpfile="$HOME/.quota_check.tmp"
 echo "The following users are near or over their mail quota:" >>$tmpfile
 echo >>$tmpfile
 
+bad_users=0
+
 for warning in $(find /var/mail/virtual/freegeek.org/ -name "quota*"); do
     maildirpath=$(dirname $warning)
     mailboxpath=$(echo $maildirpath | sed 's/Maildir//')
@@ -87,6 +89,7 @@ for warning in $(find /var/mail/virtual/freegeek.org/ -name "quota*"); do
     if [[ $diskusage -lt $qpercent ]];then
         rm $warning
     else
+        let bad_users++
         echo "${mailuser} is at ${usagepercent}% of quota, ${mailpercent}% is mail and ${spampercent}% is spam" >>$tmpfile
     fi
 done
@@ -99,8 +102,9 @@ if [[ $mail ]]; then
         echo >>$tmpfile
         echo "---" >>$tmpfile
         echo "The city's central computer told you? R2D2, you know better than to trust a strange computer!">>$tmpfile
-
-         mailx -n  -s "Over quota mailboxes on $HOSTNAME" $recipient < $tmpfile
+        if [[ $bad_users -gt 0 ]]; then
+            mailx -n  -s "Over quota mailboxes on $HOSTNAME" $recipient < $tmpfile
+        fi
 else
         cat $tmpfile
 fi
