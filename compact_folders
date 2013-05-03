@@ -132,6 +132,9 @@ for directory in $(outdated $backup_path_string $limit_string); do
     if [[ $dir =~ "bz2" ]]; then 
         # already compressed -- do nothing
         retval=255
+    elif [[ $dir =~ "gz2" ]]; then
+        # already compressed -- do nothing
+        retval=255
     else 
         compress_dir $dir
         retval=$?
