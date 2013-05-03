@@ -100,7 +100,7 @@ if [[ $mail ]]; then
         echo "---" >>$tmpfile
         echo "The city's central computer told you? R2D2, you know better than to trust a strange computer!">>$tmpfile
 
-         mailx -n  -s "Over quota users  on $HOSTNAME" $recipient < $tmpfile
+         mailx -n  -s "Over quota mailboxes on $HOSTNAME" $recipient < $tmpfile
 else
         cat $tmpfile
 fi
