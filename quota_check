@@ -13,11 +13,15 @@ help(){
 cat <<EOF 
 
 usage: $0 [OPTION]...
-This is the summary of what this script does.
-	
+Check for over and near quota mailboxes
+
+-m          send an email
+-r          sets the recipient (defaults technocrats@freegeek.org
+-f          changes the from adress from the default
 -h			prints this message
 
-This is a bash script. This part is a longer explanation of what it does. 
+This is  script will report on over or near quota mail boxes.
+It will also delete mailquotawarn files when users are no longer over quota
 EOF
 
 # if $1 exists and is a number 0..255 return that otherwise return 0
@@ -29,38 +33,75 @@ fi
 }
 # INCLUDES
 #FUNCTIONS
-push(){
-        arr=$1
-    arr=("${arr[@]}" "$1")
-      }
 # process option arguments
-while getopts "h" option; do		# w: place variable following w in $OPTARG
+while getopts "hmf:r:" option; do		# w: place variable following w in $OPTARG
 	case "$option" in
 		h) help;;
+        m) mail="true";;
+        r) recipient=$OPTARG;;
+        f) sender=$OPTARG;;
 		[?])  echo "bad option supplied" ; 
 			help;;	
 	esac
 done
 
+# default variables
+if [[ $mail ]]; then
+        if [[ -z $recipient ]]; then
+                recipient="technocrats@freegeek.org"
+        fi
+        if [[ -z $sender ]]; then
+                sender="a.robot@freegeek.org "
+        fi
+fi
+
 #MAIN
+tmpfile="$HOME/.quota_check.tmp"
+echo "The following users are near or over their mail quota:" >>$tmpfile
+echo >>$tmpfile
 
 for warning in $(find /var/mail/virtual/freegeek.org/ -name "quota*"); do
-    mailidirpath=$(dirname $warning)
+    maildirpath=$(dirname $warning)
     mailboxpath=$(echo $maildirpath | sed 's/Maildir//')
-    mailuser=$(echo $mailboxpath | awk -F '{print $NF}'
+    mailuser=$(echo $mailboxpath | awk -F/ '{print $(NF -1)}')
     diskusage=$(du -sb $mailboxpath| awk '{print$1}')
     mailusage=$(du -sb $maildirpath| awk '{print$1}')
-    spamusage=(du -sb ${mailboxpath}/.| awk '{print$1}')
-    quota=$(head -1 ${maildirpath}/maildirsize)
-    qpercent=$(echo "$quota * 90 /100" | bc)
-    usagepercent=$(echo "$diskusage / $quota * 100" | bc -l | cut -b 1-2)
-    mailpercent=$(echo "$mailusage / $quota * 100" | bc -l | cut -b 1-2)
-    spampercent=$(echo "$spamusage / $quota * 100" | bc -l | cut -b 1-2)
-    totalusage=$(echo "$diskusage / $quota" | bc -l | cut -b 1-2)
-    if (( $totalusage < $qpercent ));then
-        echo "rm $warning"
+    if [[  -e ${maildirpath}/.Spam ]]; then
+        spamusage=$(du -sb ${maildirpath}/.Spam | awk '{print$1}')
     else
-        echo "${mailuser} is at ${usagepercent}% of quota, ${mailpercent}% of which is mail and ${spampercent}% is spam"
+        spamusage="???"
+    fi
+    if [[  -e ${maildirpath}/maildirsize ]]; then
+        quota=$(head -1 ${maildirpath}/maildirsize | sed 's/S//')
+    else
+        quota=312428800
+    fi
+    qpercent=$(echo "$quota * 90 /100" | bc)
+    usagepercent=$(echo "$diskusage / $quota * 100" | bc -l | cut -b 1-5)
+    mailpercent=$(echo "$mailusage / $quota  * 100" | bc -l | cut -b 1-2)
+    if [[ $spamusage != "???" ]] ; then
+        spampercent=$(echo "$spamusage / $quota * 100" | bc -l | cut -b 1-4)
+    else
+        spampercent="???"
+    fi
+    if [[ $diskusage -lt $qpercent ]];then
+        rm $warning
+    else
+        echo "${mailuser} is at ${usagepercent}% of quota, ${mailpercent}% is mail and ${spampercent}% is spam" >>$tmpfile
     fi
 done
 
+echo >>$tmpfile
+
+if [[ $mail ]]; then
+        echo "your ever humble servant,">>$tmpfile
+        echo "                    A. Robot">>$tmpfile
+        echo >>$tmpfile
+        echo "---" >>$tmpfile
+        echo "The city's central computer told you? R2D2, you know better than to trust a strange computer!">>$tmpfile
+
+         mailx -n  -s "Over quota users  on $HOSTNAME" $recipient < $tmpfile
+else
+        cat $tmpfile
+fi
+rm $tmpfile 
