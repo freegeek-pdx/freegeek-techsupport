@@ -46,7 +46,7 @@ compress_dir(){
     dir=$1
     if  (( $(get_dirsize $dir) >= $(get_diskspace) )); then
         return 1
-    elif tar -czf "${dir}.tar.gz"  $dir 1>/dev/null; then
+    elif tar -cjf "${dir}.tar.bz2"  $dir 1>/dev/null; then
         if rm -r $dir; then
             return 0
         else
@@ -129,7 +129,7 @@ could_not_compress=()
 
 for directory in $(outdated $backup_path_string $limit_string); do
     dir="${backup_path}/${directory}"
-    if [[ $dir =~ "gz" ]]; then 
+    if [[ $dir =~ "bz2" ]]; then 
         # already compressed -- do nothing
         retval=255
     else 
