@@ -139,8 +139,7 @@ if (( ${#resolved_ticket_list[@]} > 0 )); then
     echo >>$tmpfile
     echo -n "rm -r" >>$tmpfile
     for resolved_ticket in ${resolved_ticket_list[@]}; do
-        printf"/var/tsbackup/$s " "${resolved[${resolved_ticket}_d
-        ir]}" >> $tmpfile
+        printf "/var/tsbackup/%s " "${resolved[${resolved_ticket}_dir]}" >> $tmpfile
     done
 fi
 
