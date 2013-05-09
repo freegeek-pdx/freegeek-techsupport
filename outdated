@@ -7,7 +7,7 @@ import datetime
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-l', '--limit', default=45, type=int, help="Cutoff days, defaults to 45")
-parser.add_argument('-p', '--path', default='/var/tsbackup',help="path to backup directory, defaults to /var/tsbackup")
+parser.add_argument('-p', '--path', default='/srv/tsbackup',help="path to backup directory, defaults to /srv/tsbackup")
 args = parser.parse_args()
 limit = args.limit
 path = args.path

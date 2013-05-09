@@ -15,7 +15,7 @@ Lists folders due for deletion (and sends email)
 			        the script. Requires the -m option.
 	-h 		        print this message
 
-This script prints info about backup folders on tsbackup that are due for deletion. It is primarily intended for use with cron. 
+This script prints info about backup folders or files that are due for deletion. It is primarily intended for use with cron. 
 EOF
 
 if [[ -n $1 && $(echo {0..255}) =~ $1 ]]; then
@@ -57,10 +57,8 @@ if [[ $mail ]]; then
         fi
 fi
 
-#backup_host="tsbackup"
 backup_host=$HOSTNAME
 default_backup_path="/srv/tsbackup"
-#path=/home/paulm/bin/    # note trailing slash
 
 if [[ -z $backup_path ]]; then
     backup_path=$default_backup_path
@@ -90,7 +88,7 @@ if [[ $limit -ne 45 ]]; then
     limit_string="--limit $limit"
 fi
 
-if [[ $backup_path != "/srv/tsbackup" ]]; then
+if [[ $backup_path != $default_backup_path ]]; then
     backup_path_string="--path $backup_path"
 fi
 
@@ -131,7 +129,7 @@ if (( ${#resolved_ticket_list[@]} > 0 )); then
 #printf "/srv/tsbackup/%s\t%s\t%s\t%s\n" "$dir" "$size" "$status" "$subject" >>$tmpfile
     for resolved_ticket in ${resolved_ticket_list[@]}; do
         # referencing our fake multi-D array
-        printf "/srv/tsbackup/%s\t%s\t%s\t%s\n" "${resolved[${resolved_ticket}_dir]}" "${resolved[${resolved_ticket}_size]}" "${resolved[${resolved_ticket}_status]}" "${resolved[${resolved_ticket}_subject]}" >>$tmpfile
+        printf "$backup_path/%s\t%s\t%s\t%s\n" "${resolved[${resolved_ticket}_dir]}" "${resolved[${resolved_ticket}_size]}" "${resolved[${resolved_ticket}_status]}" "${resolved[${resolved_ticket}_subject]}" >>$tmpfile
     done
     echo >> $tmpfile
     # repeat so we have a command short cut
@@ -139,7 +137,7 @@ if (( ${#resolved_ticket_list[@]} > 0 )); then
     echo >>$tmpfile
     echo -n "rm -r " >>$tmpfile
     for resolved_ticket in ${resolved_ticket_list[@]}; do
-        printf "/srv/tsbackup/%s " "${resolved[${resolved_ticket}_dir]}" >> $tmpfile
+        printf "$backup_path/%s " "${resolved[${resolved_ticket}_dir]}" >> $tmpfile
     done
 fi
 
@@ -151,7 +149,7 @@ if (( ${#unresolved_ticket_list[@]} > 0 )); then
     #loop over list of unresolved tickets
     for unresolved_ticket in ${unresolved_ticket_list[@]}; do
         # referencing our fake multi-D array
-        printf "/srv/tsbackup/%s\t%s\t%s\t%s\n" "${unresolved[${unresolved_ticket}_dir]}" "${unresolved[${unresolved_ticket}_size]}" "${unresolved[${unresolved_ticket}_status]}" "${unresolved[${unresolved_ticket}_subject]}" >>$tmpfile
+        printf "$backup_path/%s\t%s\t%s\t%s\n" "${unresolved[${unresolved_ticket}_dir]}" "${unresolved[${unresolved_ticket}_size]}" "${unresolved[${unresolved_ticket}_status]}" "${unresolved[${unresolved_ticket}_subject]}" >>$tmpfile
     done
 fi
 
@@ -182,7 +180,7 @@ if (( $(date +%m) < 3 )); then
         #loop over list of unresolved tickets
         for unsound_ticket in ${unsound_ticket_list[@]}; do
         # referencing our fake multi-D array
-        printf "/srv/tsbackup/%s\t%s\t%s\t%s\n" "${unsound[${unsound_ticket}_dir]}" "${unsound[${unsound_ticket}_size]}" "${unsound[${unsound_ticket}_status]}" "${unsound[${unsound_ticket}_subject]}" >>$tmpfile
+        printf "$backup_path/%s\t%s\t%s\t%s\n" "${unsound[${unsound_ticket}_dir]}" "${unsound[${unsound_ticket}_size]}" "${unsound[${unsound_ticket}_status]}" "${unsound[${unsound_ticket}_subject]}" >>$tmpfile
     done
     
     fi

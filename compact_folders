@@ -18,7 +18,7 @@ usage: $0 [OPTION]
 
 	-h			prints this message
 
-This script compresses  about backup folders on tsbackup older than a certain date, by default 14 days. It is primarily intended for use with cron. 
+This script compresses  about backup folders older than a certain date, by default 14 days. It is primarily intended for use with cron. 
 
 EOF
 
@@ -116,7 +116,7 @@ fi
 
 limit_string="--limit $limit"
 
-if [[ $backup_path != "/var/tsbackup" ]]; then
+if [[ $backup_path != $default_backup_path ]]; then
     backup_path_string="--path $backup_path"
 fi
 

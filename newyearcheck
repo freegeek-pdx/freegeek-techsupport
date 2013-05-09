@@ -9,7 +9,7 @@ today = datetime.datetime.today()
 timedelta = datetime.timedelta(300)
 cutoff = today - timedelta
 
-default_path = "/var/tsbackup"
+default_path = "/srv/tsbackup"
 try:
     sys.argv[1]
     path = sys.argv[1]
