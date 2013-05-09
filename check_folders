@@ -74,7 +74,7 @@ if [[ -z $limit ]]; then
 fi
 
 tmpfile="$HOME/.folder_check.tmp"
-diskfree="$( df -h | grep "$backup_path" | awk '{print "Used: " $3 " Free: " $4}')"
+diskfree="$( df -h | grep "$backup_path" | awk '{print "Used: " $3 " Free: " $4"  "  $5 " full." }')"
 echo "Usage Stats for $backup_path on $backup_host:" >>$tmpfile
 echo $diskfree >>$tmpfile
 
