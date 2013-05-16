@@ -1,0 +1,76 @@
+#!/bin/bash
+# this file has the following standard layout
+# CONFIGURATION
+# help function
+# INCLUDES
+#FUNCTIONS
+# process option arguments
+# MAIN
+
+# CONFIGURATION
+
+help(){
+cat <<EOF 
+
+usage: $0 [OPTION]...
+This is the summary of what this script does.
+	
+-h			prints this message
+
+This is a bash script. This part is a longer explanation of what it does. 
+EOF
+
+# if $1 exists and is a number 0..255 return that otherwise return 0
+if [[ -n $1 && $(echo {0..255}) =~ $1 ]]; then
+        exit $1
+else
+	exit 0
+fi
+}
+# INCLUDES
+#FUNCTIONS
+
+display(){
+    mtype=" --$1"
+    message=$2
+    zenity $mtype --text="$2"
+}
+
+# process option arguments
+while getopts "h" option; do		# w: place variable following w in $OPTARG
+	case "$option" in
+		h) help;;
+		[?])  echo "bad option supplied" ; 
+			help;;	
+	esac
+done
+
+#MAIN
+
+if ping -c 5 google.com &>/dev/null; then
+    if ! wget --spider http://www.google.com &>/dev/null; then
+        display warning  "Network is up but http requests to google are timing out"
+    else
+        display info "Network is up and functional!"
+        no_reboot="true"
+    fi
+elif ping -c 5 173.194.33.6  &>/dev/null; then
+    display warning "The network is up but dns appears to be failing"
+else
+    if route | grep default >/dev/null; then
+        gateway=$(route | grep default | awk '{print $2}')
+        if ping -c 5 $gateway &>/dev/null; then
+            display warning "You computer is connected to the network and the router responds but we can get no further. This normally means your external internet connection is down"
+        else
+            display error "Your computer is connected to the network but the router is not responding."
+        fi
+    elif ! route | grep eth  &>/dev/null; then
+        display error "The computer has no working network connection and no IP address"
+    else
+        display warning "Your computer has an IP adress but no working network connection"
+    fi
+fi
+if [[ $reboot ]]; then
+            display info "Try rebooting the router, wating for 30 secs then  rebooting your computer"
+fi
+
