@@ -8,9 +8,9 @@
 
 # CONFIGURATION
 
-package_loc="http://oscar/"
+package_loc="http://bruno/"
 tst_pkg="tstools.tar.gz"
-backup_host="oscar"
+backup_host="bruno"
 version=$(lsb_release -a 2> /dev/null | grep Release | awk '{print $2}')
 
 help(){
