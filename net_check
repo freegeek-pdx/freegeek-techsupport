@@ -65,7 +65,11 @@ else
             display error "Your computer is connected to the network but the router is not responding."
         fi
     elif ! route | grep eth  &>/dev/null; then
-        display error "The computer has no working network connection and no IP address"
+        if ! route | grep wlan  &>/dev/null; then
+            display error "The computer has no working network connection and no IP address"
+        else
+            display warning "Your computer has an IP adress but no working network connection"
+        fi
     else
         display warning "Your computer has an IP adress but no working network connection"
     fi
