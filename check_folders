@@ -93,7 +93,7 @@ if [[ $backup_path != $default_backup_path ]]; then
 fi
 
 for dir in $(${path}outdated $backup_path_string $limit_string); do
-    ticket=$(echo $dir | awk -F - '{print $2}' | sed 's/.tar.gz//')
+    ticket=$(echo $dir | awk -F - '{print $2}' | sed 's/[^0-9]*//g')
     while read line; do
         if [[ $line =~  "Subject:" ]]; then 
             subject=$(echo -n $line | awk '{$1=""; print $0}')
@@ -135,9 +135,11 @@ if (( ${#resolved_ticket_list[@]} > 0 )); then
     # repeat so we have a command short cut
     echo "You can use the following command if you are sure the folders can be deleted" >>$tmpfile
     echo >>$tmpfile
+    echo "cd $backup_path" >>$tmpfile
     echo -n "rm -r " >>$tmpfile
     for resolved_ticket in ${resolved_ticket_list[@]}; do
-        printf "$backup_path/%s " "${resolved[${resolved_ticket}_dir]}" >> $tmpfile
+        printf "${resolved[${resolved_ticket}_dir]}" >> $tmpfile
+        echo >>$tmpfile
     done
 fi
 
