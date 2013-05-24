@@ -106,18 +106,18 @@ for dir in $(${path}outdated $backup_path_string $limit_string); do
     if [[ $status =~ "resolved" ]]; then    # push ticket on to list
                                             #  of resolved tickets
 
-        resolved_ticket_list=(${resolved_ticket_list[@]}  "$ticket")
+        resolved_ticket_list=(${resolved_ticket_list[@]}  "$dir")
         # store details in associative array (fake multi_dimensional)
         for value in dir size status subject; do
-            resolved[${ticket}_$value]=${!value}
+            resolved[${dir}_$value]=${!value}
         done
 
     else        # push ticket on to list of unresolved tickets
 
-        unresolved_ticket_list=(${unresolved_ticket_list[@]}  "$ticket")
+        unresolved_ticket_list=(${unresolved_ticket_list[@]}  "$dir")
         # store details in associative array (fake multi_dimensional)
         for value in dir size status subject; do
-            unresolved[${ticket}_$value]=${!value}
+            unresolved[${dir}_$value]=${!value}
         done
     fi
     unset subject # otherwise it occasionally gets reused
