@@ -133,14 +133,15 @@ if (( ${#resolved_ticket_list[@]} > 0 )); then
     done
     echo >> $tmpfile
     # repeat so we have a command short cut
-    echo "You can use the following command if you are sure the folders can be deleted" >>$tmpfile
+    echo "You can use the following commands if you are sure the folders can be deleted" >>$tmpfile
     echo >>$tmpfile
     echo "cd $backup_path" >>$tmpfile
     echo -n "rm -r " >>$tmpfile
     for resolved_ticket in ${resolved_ticket_list[@]}; do
-        printf "${resolved[${resolved_ticket}_dir]}" >> $tmpfile
-        echo >>$tmpfile
+    #    echo -n  "${resolved[${resolved_ticket}_dir]} " >> $tmpfile
+        echo -n  "$resolved_ticket " >> $tmpfile
     done
+    echo >>$tmpfile
 fi
 
 # we have tickets that have a status that is not resolved
