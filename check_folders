@@ -6,6 +6,8 @@ Lists folders due for deletion (and sends email)
     -l [LIMIT]      Check for folders older than LIMIT days. Default 45.
 	-m 		        Send email rather than printing to stdout.
     -p [PATH]       Use this option to specify the path of the backup dir
+    -d [PATH]       Use this option to specify the mountpoint/drive 
+                    the backup folder is stored on
 	-r [EMAIL]	    Specify optional adress to send email to. 
 			        It is not necessary to specify an address. 
 			        There is one set by default in the script.
@@ -35,6 +37,7 @@ while getopts "hl:mr:f:p:" option; do
 		        r) recipient=$OPTARG;;
 		        f) sender=$OPTARG;;
                 p) backup_path=$OPTARG;;
+                d)backup_drive=$OPTARG;;
                 \?)  echo "bad option supplied" 
                        help 2
 		;;
@@ -59,7 +62,7 @@ fi
 
 backup_host=$HOSTNAME
 default_backup_path="/srv/tsbackup"
-
+default_backup_drive="/srv"
 if [[ -z $backup_path ]]; then
     backup_path=$default_backup_path
 fi
@@ -69,13 +72,23 @@ if [[ ! -e $backup_path ]]; then
     exit 3
 fi
 
+if [[ -z $backup_drive ]]; then
+    backup_path=$default_backup_drive
+fi
+
+if [[ ! -e $backup_drive]]; then
+    echo "$backup_drive does not exist!"
+    exit 3
+fi
+
+
 if [[ -z $limit ]]; then
     limit=45
 fi
 
 tmpfile="$HOME/.folder_check.tmp"
-diskfree="$( df -h | grep "$backup_path" | awk '{print "Used: " $3 " Free: " $4"  "  $5 " full." }')"
-echo "Usage Stats for $backup_path on $backup_host:" >>$tmpfile
+diskfree="$( df -h | grep "$backup_drive" | awk '{print "Used: " $3 " Free: " $4"  "  $5 " full." }')"
+echo "Usage Stats for $backup_drive on $backup_host:" >>$tmpfile
 echo $diskfree >>$tmpfile
 
 
