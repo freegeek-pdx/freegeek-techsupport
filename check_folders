@@ -68,16 +68,16 @@ if [[ -z $backup_path ]]; then
 fi
 
 if [[ ! -e $backup_path ]]; then
-    echo "$backup_path does not exist!"
+    echo "Backup path $backup_path does not exist!"
     exit 3
 fi
 
 if [[ -z $backup_drive ]]; then
-    backup_path=$default_backup_drive
+    backup_drive=$default_backup_drive
 fi
 
 if [[ ! -e $backup_drive ]]; then
-    echo "$backup_drive does not exist!"
+    echo "Backup drive $backup_drive does not exist!"
     exit 3
 fi
 
