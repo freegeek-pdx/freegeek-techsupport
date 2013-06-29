@@ -1,0 +1,103 @@
+#!/bin/bash
+# this file has the following standard layout
+# CONFIGURATION
+# help function
+# INCLUDES
+#FUNCTIONS
+# process option arguments
+# MAIN
+
+# CONFIGURATION
+
+help(){
+cat <<EOF 
+
+usage: $0 [DIR]
+Removes duplicate files from a directory . 
+	
+-h			prints this message
+-d          dry-run don't actually delete files just tell waht would 
+            be kept or deleted
+-v          verbose
+
+If this script finds duplicate files it will remove files appended  e.g -1.jpg fin preference to the original otheriwse it will delete all but the last duplicate it finds.
+EOF
+
+# if $1 exists and is a number 0..255 return that otherwise return 0
+if [[ -n $1 && $(echo {0..255}) =~ $1 ]]; then
+        exit $1
+else
+	exit 0
+fi
+}
+# INCLUDES
+#FUNCTIONS
+
+# process option arguments
+while getopts "hdv" option; do		# w: place variable following w in $OPTARG
+	case "$option" in
+		h) help;;
+        d) dryrun="true";;
+        v) verbose="true";;
+		[?])  echo "bad option supplied" ; 
+			help;;	
+	esac
+done
+
+pop(){
+        local name=$1
+        array=${!name}
+        elem=${array[${#array[*]}-1]}  # Why -1? arrays start at zero
+        echo $elem                  
+        unset $name[${#array[*]}-1] 
+}
+
+
+#MAIN
+DIR=$1
+if [[ ! -e /usr/share/fslint/fslint/findup ]]; then
+    echo "findup not found. Install it with apt-get install fslint"
+    exit 3
+else 
+    echo "Preparing list of duplicate files. This may take some time..."
+    /usr/share/fslint/fslint/findup >.dedup.tmp
+fi
+
+declare -a array
+        declare -a keep
+        declare -a delete
+while read line; do 
+    if [[ !  $line == '' ]] ;then
+        array=(${array[@]} "$line")
+    else
+        for file in ${array[@]}; do
+            # duplicate files are often appended  e.g. -1.jpg
+            # if a file does not have this appended keep it 
+            if [[ ! $file =~ .*-[0-9]+\..* ]]; then
+                keep=(${keep[@]} "$file")
+            else
+                delete=(${delete[@]} "$file")
+            fi
+        done
+        if (( ${#keep[@]} > 1 )); then
+            save=$(pop keep)
+            delete=(${delete[@]} ${keep[@]})
+            unset keep
+            keep[0]=$save
+        fi
+        if [[ $verbose || $dryrun ]]; then
+            echo "keeping ${keep[*]}"  
+            echo "deleting ${delete[*]}"  
+        fi
+        if [[ ! $dryrun ]]; then
+            for delfile in ${delete[@]}; do 
+                rm "${DIR}/${delfile}"
+            done
+        fi
+        unset keep
+        unset delete
+        unset array
+    fi
+done < .dedup.tmp
+rm .dedup.tmp
+
