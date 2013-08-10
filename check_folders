@@ -171,7 +171,7 @@ fi
 
 
 # if its the beginning of the year check for wrong dates
-if (( $(date +%m) < 3 )); then 
+if (( $(date +%-m) < 3 )); then 
     for dir in $(${path}newyearcheck $backup_path); do
         ticket=$(echo $dir | awk -F - '{print $2}')
         while read line; do
