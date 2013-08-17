@@ -1,48 +1,105 @@
 #!/usr/bin/env python
+'''send techoncrats minutes'''
+
 from __future__ import absolute_import, print_function, unicode_literals
-import smtplib
 import argparse
 import datetime
 import sys
+from request_tracker import RT, RT_URL, send_email, load_config
 
-def send_email(mail_host, from_addr, mailto, subject, body):
-    '''sends an email'''
-    msg = MIMEText(body)
-    msg['Subject'] = subject
-    msg['From'] = from_addr
-    msg['To'] = mailto
-    msg.add_header('X-Mailer', 'minutes-mailer')
-    msg.add_header('X-Sent-By-Robot', 
-            'The city\'s central computer told you? R2D2, you know \
-                    better than to trust a strange computer!')
-    s = smtplib.SMTP(mail_host)
-    try:
-        s.sendmail(from_addr, mailto, msg.as_string())
-        sent = True
-    except:
-        sent = False
-    s.quit()
-    if sent == True:
-        return True
-    else:
-        return False
+def loadconfig():
+    '''loads configuration file'''
+    config = load_config('/etc/rt.cfg')
+    rtconf = config['rt']
+    mail = config['mail']
+    global RT_HOST, RT_USER, RT_PASSWORD, RT_QUEUE, RT_FROM, RT_TO, MAILHOST
+    RT_HOST = 'todo.freegeek.org'
+    RT_USER = rtconf['rt_user']
+    RT_PASSWORD = rtconf['rt_password']
+    MAILHOST = mail['mail_host']
+    # set locally
+    RT_QUEUE = 'technocrats'
+    RT_FROM = 'paulm@freegeek.org'
+
 
 def read_options():
+    '''read command line options'''
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--send-draught", help="email draught minutes", action="store_true")
-    parser.add_argument("-m", "--send-minutes", help="send final minutes", action="store_true")
-    parser.add_argument("-d") "--date", help="date of minutes(if not today or 1 week ago)", action="store")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-d", "--send-draught", 
+            help="email draught minutes", action="store_true")
+    group.add_argument("-m", "--send-minutes", 
+            help="Send final minutes. Supply ticket number as an argument",
+            action="store")
+    parser.add_argument("-D", "--date", 
+            help="date of minutes(if not today or 1 week ago)", 
+            action="store")
+    parser.add_argument("-f", "--file", 
+            help="file containing minutes", action="store")
     args = parser.parse_args()
     if not args.date:
         if args.send_draught:
             args.date = 'today'
         elif args.send_minutes:
             args.date = 'lastweek'
-    if not args.send_minutes and not args.send_draught:
-            print('on of -d, 
-    return 
+    if args.send_draught:
+        action = 'draught'
+    elif  args.send_minutes:
+        action = args.send_minutes
+    if args.file:
+        mfile = args.file
+    else:
+        mfile = None
+    return action, args.date, mfile
 
 
+def get_file(date):
+    #TODO get default filename
+
+def load_file(mfile):
+    # TODO load file and return file object as string?
+
+
+def setup_object():
+    '''create request tracker opject and login'''
+    rt_object = RT(RT_URL, RT_USER, RT_PASSWORD)
+    rt_object.login()
+    return rt_object
+
+def send_draught(date, mfile):
+    '''send draught minutes'''
+   # TODO determine date, load file, contstruct subject line, send email
+    pass
+
+def  send_final(action, date, mfile):
+    '''send final minutes'''
+    ticket = setup_object()
+    try:
+        # note action contains ticket number
+        isvalid = ticket.is_valid_ticket(RT_QUEUE, action)
+        if not isvalid:
+            print('Not a valid ticket')
+            sys.exit(1)
+    except:
+        print('could not connect to RT. \
+            Check your network connection and try again')
+        sys.exit(3)
+   # TODO determine date, load file, contstruct subject line
+   # TODO email minutes list, add comment and closer ticket (via + done email)
+
+if __name__ == "__main__":
+    loadconfig()
+    ACTION, DATE, MINUTESFILE = read_options()
+    if ACTION == 'draught':
+        send_draught(DATE, MINUTESFILE)
+    else:
+        # send final minutes, action should contain ticket number
+        send_final(ACTION, DATE, MINUTESFILE)
+
+
+'''
+================================================================================
 1807  mailx -s 'DRAFT: Minutes 2013-06-26' -r 'paulm@freegeek.org'  technocrats@freegeek.org <  minutes.20130628
  3367  mailx -s 'Technocrats  Minutes 2013-07-19' -r 'paulm@freegeek.org'  minutes@freegeek.org <  Documents/technocrats/technocrats_minutes.20130719
  3383  mailx -s 'Technocrats  Minutes 2013-07-19' -r 'paulm@freegeek.org'  done+36615@todo.freegeek.org <  Documents/technocrats/technocrats_minutes.20130719
+'''
