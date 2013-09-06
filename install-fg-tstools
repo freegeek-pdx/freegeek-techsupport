@@ -1,0 +1,53 @@
+#!/bin/bash
+# this file has the following standard layout
+# CONFIGURATION
+# help function
+# INCLUDES
+#FUNCTIONS
+# process option arguments
+# MAIN
+
+# CONFIGURATION
+
+help(){
+cat <<EOF 
+Instal fg-tstools
+usage: $0 [OPTION]...	
+-h			prints this message
+
+This is a bash script for installing fg-tstools in debian rescue
+EOF
+
+# if $1 exists and is a number 0..255 return that otherwise return 0
+if [[ -n $1 && $(echo {0..255}) =~ $1 ]]; then
+        exit $1
+else
+	exit 0
+fi
+}
+# INCLUDES
+#FUNCTIONS
+
+# process option arguments
+while getopts "h" option; do		# w: place variable following w in $OPTARG
+	case "$option" in
+		h) help;;
+		[?])  echo "bad option supplied" ; 
+			help;;	
+	esac
+done
+
+#MAIN
+ssh tsbackup@wheretsbackup cat /usr/share/keyrings/freegeek-archive-keyring.gpg | sudo apt-key add -
+cat >>freegeek-extras.list <<EOL
+# debian sources for freegeek specific packages
+# install into /etc/apt/sources.list.d
+
+deb http://apt.freegeek.org/ubuntu precise main
+EOL
+sudo mv freegeek-extras.list /etc/apt/sources.list.d/
+if sudo apt-get update && sudo apt-get install fg-tstools; then
+    echo "fg-tstools is now installed"
+else
+    echo "something went wrong"
+fi
