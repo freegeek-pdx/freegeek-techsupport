@@ -38,7 +38,7 @@ while getopts "h" option; do		# w: place variable following w in $OPTARG
 done
 
 #MAIN
-ssh tsbackup@wheretsbackup cat /usr/share/keyrings/freegeek-archive-keyring.gpg | sudo apt-key add -
+ssh tsbackup@tsbackup cat /usr/share/keyrings/freegeek-archive-keyring.gpg | sudo apt-key add -
 cat >>freegeek-extras.list <<EOL
 # debian sources for freegeek specific packages
 # install into /etc/apt/sources.list.d
