@@ -184,26 +184,17 @@ if [[ $first_run ]]; then
     write_msg "Running the first part of the upgrade process"
     touch /home/.first_run_start
     # get tstools
-    if ! wget ${package_loc}${tst_pkg} ; then
-       write_msg "failed to download tstools"
+    apt-get update
+    if !  apt-get install fg-tstools; then
+       write_msg "failed to install tstools"
         exit 3
     fi
 
-    if ! tar -xvzf $tst_pkg; then
-        write_msg "could not extract $tst_pkg"
-        exit 3
     fi
 
 
     # do backup
 
-    if [[ -e $PWD/tstools_package/ ]]; then
-        tsnb="$PWD/tstools_package/" 
-    else 
-        tsnb=$(find -name tstools_package -print)
-    fi
-    cd $tsnb
-    chmod +x ./ts_network_backup
     now=$(date +%Y%m%d)
     if [[ -z $ticket ]]; then
         echo "Enter ticket number for this job"
@@ -211,9 +202,9 @@ if [[ $first_run ]]; then
     fi
     # force overwrite of existing backup
     if [[ $force_overwrite ]]; then
-        backup_command="./ts_network_backup -Fc"
+        backup_command="ts_network_backup -Fc"
     else
-        backup_command="./ts_network_backup -c"
+        backup_command="ts_network_backup -c"
     fi
     # backup using ts_network_backup
     if ! $backup_command $ticket; then
