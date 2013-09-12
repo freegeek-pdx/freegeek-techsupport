@@ -190,9 +190,6 @@ if [[ $first_run ]]; then
         exit 3
     fi
 
-    fi
-
-
     # do backup
 
     now=$(date +%Y%m%d)
