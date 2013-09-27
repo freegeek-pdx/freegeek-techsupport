@@ -8,6 +8,9 @@
 
 # CONFIGURATION
 
+# TODO remove and reinstall blueman on 2nd run
+
+
 package_loc="http://bruno/"
 tst_pkg="tstools.tar.gz"
 backup_host="bruno"
@@ -262,7 +265,12 @@ elif [[ $second_run ]]; then
     #mv /etc/lightdm/ /root/
     # hangs here or just after need check on apt-get -y  purge lightdm
     # may not be woring, might only need to do this if it is a problem so skip this step??
-
+    
+    # blueman cuases problems, we will put it back later
+    if dpkg -l | grep blueman &>/dev/null; then 
+        blueman="true"
+        apt-get -y remove blueman
+    fi
     xub_msg=$(apt-get -y  install xubuntu-desktop)
     if [[ $? -ne 0 ]]; then
         write_msg "could not install xubuntu! aborting..."
@@ -324,7 +332,10 @@ elif [[ $second_run ]]; then
             write_msg "Sucessfully removed $list_of_packages_to_remove"
         fi
     fi
-    
+    if $blueman; then
+        echo "restoring blueman"
+        apt-get install -y blueman
+    fi
     # Do basic cleanup
     write_msg "cleaning up unused packages"
     autoremove_msg=$(apt-get -y autoremove)
